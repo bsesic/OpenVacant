@@ -177,6 +177,7 @@ class Inspection(OrganizationOwnedModel):
             )
 
         transition = self._advance_status(actor=actor or self.inspector)
+        self._credit_participation(transition)
 
         # Written last, because a status change stamps today by default. What
         # matters here is when the object was actually looked at, which can be
@@ -187,6 +188,18 @@ class Inspection(OrganizationOwnedModel):
         self.applied_at = timezone.now()
         self.save(update_fields=["applied_at"])
         return transition
+
+    def _credit_participation(self, transition):
+        """Credit the people whose work this verification represents.
+
+        Imported inside the method: participation is optional and this keeps the
+        professional model free of a hard dependency on it.
+        """
+        from apps.participation.services import notify_confirmations_for, record_inspection
+
+        record_inspection(self)
+        if transition is not None and transition.to_status == RecordStatus.CONFIRMED:
+            notify_confirmations_for(self.property, actor=self.inspector)
 
     def _advance_status(self, actor=None):
         record = self.property

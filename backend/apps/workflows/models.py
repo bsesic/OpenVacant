@@ -153,6 +153,11 @@ class Task(OrganizationOwnedModel):
                 "updated_at",
             ]
         )
+        # Imported here so the task model carries no hard dependency on the
+        # optional participation module.
+        from apps.participation.services import record_task_completed
+
+        record_task_completed(self)
         return self
 
     def reopen(self):

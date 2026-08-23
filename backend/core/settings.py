@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     "apps.integrations",
     "apps.municipalities",
     "apps.parcels",
+    "apps.participation",
     "apps.properties",
     "apps.reports",
     "apps.statistics",
