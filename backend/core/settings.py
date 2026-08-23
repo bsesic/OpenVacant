@@ -73,6 +73,8 @@ INSTALLED_APPS = [
     "compliance",
     "newsletter",
     "api",
+    # Domain apps
+    "apps.municipalities",
 ]
 
 MIDDLEWARE = [
@@ -89,6 +91,8 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     # Sets request.organization for the current tenant (must come after auth).
     "organizations.middleware.OrganizationMiddleware",
+    # Sets request.municipality (needs the tenant, so it comes after it).
+    "apps.municipalities.middleware.MunicipalityMiddleware",
     # Audit-log request user + feature flags.
     "simple_history.middleware.HistoryRequestMiddleware",
     "waffle.middleware.WaffleMiddleware",
@@ -110,6 +114,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "organizations.context_processors.organizations",
+                "apps.municipalities.context_processors.municipality",
                 "notifications.context_processors.notifications",
                 "core.context_processors.analytics",
             ],
@@ -206,6 +211,10 @@ for _provider in ("google", "microsoft", "apple", "facebook"):
             _app["key"] = env("APPLE_KEY_ID", default="")
             _app["settings"] = {"certificate_key": env("APPLE_CERTIFICATE_KEY", default="")}
         SOCIALACCOUNT_PROVIDERS[_provider] = {"APPS": [_app]}
+
+# URL form fields default to https when no scheme is given. This is the Django 6
+# behaviour, opted into early so the transitional warning stays out of the way.
+FORMS_URLFIELD_ASSUME_HTTPS = True
 
 # --- Crispy forms ----------------------------------------------------------
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"

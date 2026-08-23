@@ -32,6 +32,7 @@ urlpatterns = [
     path("profile/", include("users.urls_web")),
     path("account/", include("compliance.urls")),
     path("organizations/", include("organizations.urls")),
+    path("municipality/", include("apps.municipalities.urls")),
     path("billing/", include("billing.urls")),
     path("notifications/", include("notifications.urls")),
     path("newsletter/", include("newsletter.urls")),
