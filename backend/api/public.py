@@ -6,7 +6,7 @@ administrative one, so a field cannot arrive by inheritance. See ADR 0009.
 """
 
 from django.utils.translation import gettext_lazy as _
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_field
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -57,19 +57,23 @@ class PublicPropertySerializer(serializers.Serializer):
     recorded_on = serializers.DateField()
     photo = serializers.SerializerMethodField()
 
+    @extend_schema_field(serializers.CharField(allow_null=True))
     def get_district(self, obj):
         return obj.district.name if obj.district_id else None
 
+    @extend_schema_field(serializers.FloatField(allow_null=True))
     def get_latitude(self, obj):
         return obj.location.y if obj.location else None
 
+    @extend_schema_field(serializers.FloatField(allow_null=True))
     def get_longitude(self, obj):
         return obj.location.x if obj.location else None
 
+    @extend_schema_field(serializers.CharField(allow_null=True))
     def get_photo(self, obj):
         for document in obj.documents.all():
             if document.kind == DocumentKind.PHOTO and document.is_public:
-                return document.file.url
+                return document.get_download_url()
         return None
 
 
@@ -117,11 +121,20 @@ class PublicPropertyViewSet(
         return queryset
 
 
-@extend_schema(tags=["public"])
+class PublicStatisticsSerializer(serializers.Serializer):
+    """Shape of the public statistics response."""
+
+    municipality = PublicMunicipalitySerializer()
+    figures = serializers.DictField(child=serializers.IntegerField())
+    breakdowns = serializers.DictField()
+
+
+@extend_schema(tags=["public"], responses=PublicStatisticsSerializer)
 class PublicStatisticsView(PublicAccessMixin, APIView):
     """Aggregated key figures. Counts only, no individual objects."""
 
     required_scope = "read_statistics"
+    serializer_class = PublicStatisticsSerializer
 
     def get(self, request):
         organization = self.public_organization()
@@ -149,9 +162,11 @@ class PublicStatisticsView(PublicAccessMixin, APIView):
         )
 
 
-@extend_schema(tags=["public"])
+@extend_schema(tags=["public"], responses=PublicMunicipalitySerializer)
 class PublicMunicipalityView(PublicAccessMixin, APIView):
     """Who runs this instance."""
+
+    serializer_class = PublicMunicipalitySerializer
 
     def get(self, request):
         organization = self.public_organization()

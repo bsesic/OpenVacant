@@ -1,7 +1,8 @@
 [Unit]
 Description=OpenVacant - Celery worker
-After=network.target redis.service postgresql.service
-Requires=redis.service
+Documentation=https://github.com/bsesic/OpenVacant
+After=network-online.target redis-server.service postgresql.service
+Requires=redis-server.service
 
 [Service]
 Type=simple
@@ -10,21 +11,28 @@ Group=openvacant
 WorkingDirectory=/opt/openvacant/backend
 EnvironmentFile=/opt/openvacant/backend/.env
 
+# The work is geodata imports, context recomputation, statistics snapshots and
+# retention runs: few tasks, some of them long. A small pool with late
+# acknowledgement suits that better than many short-lived workers.
 ExecStart=/opt/openvacant/venv/bin/celery -A core worker \
     --loglevel=info \
+    --concurrency=2 \
+    --max-tasks-per-child=200 \
     --logfile=/var/log/openvacant/celery.log
 
 Restart=on-failure
 RestartSec=5
 KillSignal=SIGTERM
-TimeoutStopSec=60
+# Long enough for a layer import to finish rather than be cut off half way.
+TimeoutStopSec=300
 
-# Hardening
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/openvacant/backend /var/log/openvacant
+RestrictSUIDSGID=true
+LockPersonality=true
+ReadWritePaths=/opt/openvacant/backend/media /var/log/openvacant
 
 [Install]
 WantedBy=multi-user.target

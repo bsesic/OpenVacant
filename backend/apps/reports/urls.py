@@ -18,6 +18,11 @@ urlpatterns = [
     path("<int:pk>/accept/", views.ReportAcceptView.as_view(), name="accept"),
     path("<int:pk>/attach/", views.ReportAttachView.as_view(), name="attach"),
     path(
+        "<int:pk>/photos/<int:photo_pk>/file/",
+        views.ReportPhotoDownloadView.as_view(),
+        name="photo_download",
+    ),
+    path(
         "<int:pk>/photos/<int:photo_pk>/publication/",
         views.ReportPhotoPublicationView.as_view(),
         name="photo_publication",

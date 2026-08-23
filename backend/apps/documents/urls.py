@@ -11,6 +11,7 @@ urlpatterns = [
         views.DocumentCreateView.as_view(),
         name="create",
     ),
+    path("<int:pk>/file/", views.DocumentDownloadView.as_view(), name="download"),
     path("<int:pk>/visibility/", views.DocumentVisibilityView.as_view(), name="visibility"),
     path("<int:pk>/delete/", views.DocumentDeleteView.as_view(), name="delete"),
 ]

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from notifications.models import Notification
@@ -21,6 +22,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
         model = Organization
         fields = ("id", "name", "slug", "role")
 
+    @extend_schema_field(serializers.CharField(allow_null=True))
     def get_role(self, obj):
         request = self.context.get("request")
         return obj.get_role(request.user) if request else None

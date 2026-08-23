@@ -23,7 +23,7 @@
       <tbody>
         {% for document in documents %}
           <tr>
-            <td><a href="{{ document.file.url }}" rel="noopener">{{ document.title }}</a></td>
+            <td><a href="{{ document.get_download_url }}" rel="noopener">{{ document.title }}</a></td>
             <td>{{ document.get_kind_display }}</td>
             <td>
               <a href="{{ document.property.get_absolute_url }}">

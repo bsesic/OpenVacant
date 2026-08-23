@@ -19,7 +19,10 @@ BACKEND_DIR="${BACKEND_DIR:-$PROJECT_DIR/backend}"
 VENV_DIR="${VENV_DIR:-$PROJECT_DIR/venv}"
 PYTHON="${PYTHON:-$VENV_DIR/bin/python}"
 PIP="${PIP:-$VENV_DIR/bin/pip}"
-SERVICES="${SERVICES:-openvacant-gunicorn}"
+# All long-running services, not just the web process: a release that changes a
+# Celery task or the beat schedule needs the worker and the scheduler restarted
+# too, or they keep running the previous code.
+SERVICES="${SERVICES:-openvacant-gunicorn openvacant-celery openvacant-celerybeat}"
 HEALTHCHECK_URL="${HEALTHCHECK_URL:-https://example.com/readyz}"
 HEALTHCHECK_TIMEOUT="${HEALTHCHECK_TIMEOUT:-15}"
 
@@ -74,6 +77,29 @@ cd "$BACKEND_DIR"
 # ── 4. Deploy checklist ──────────────────────────────────────────────────────
 log "4/9 Running Django deploy checklist"
 "$PYTHON" manage.py check --deploy
+
+# PostGIS is required, and a missing extension shows up as an unhelpful error
+# during migrate. Say so plainly instead.
+log "    Verifying PostGIS"
+if ! "$PYTHON" - <<'PYCHECK'
+import os
+import django
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
+django.setup()
+from django.db import connection
+
+with connection.cursor() as cursor:
+    cursor.execute("SELECT extname FROM pg_extension WHERE extname = 'postgis'")
+    if cursor.fetchone() is None:
+        raise SystemExit(
+            "PostGIS is not installed in this database. Run:\n"
+            "  psql -d <database> -c 'CREATE EXTENSION postgis;'"
+        )
+PYCHECK
+then
+    fail "PostGIS check failed — see the message above"
+fi
 
 # ── 5. Migrations ────────────────────────────────────────────────────────────
 log "5/9 Applying database migrations"

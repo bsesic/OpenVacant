@@ -7,3 +7,7 @@ class IntegrationsConfig(AppConfig):
     name = "apps.integrations"
     label = "integrations"
     verbose_name = _("Integrations")
+
+    def ready(self):
+        # Registers the OpenAPI security scheme for the API key authenticator.
+        from apps.integrations import schema  # noqa: F401

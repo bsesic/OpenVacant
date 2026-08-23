@@ -1,7 +1,11 @@
 [Unit]
 Description=OpenVacant - Celery beat scheduler
-After=network.target redis.service postgresql.service
-Requires=redis.service
+Documentation=https://github.com/bsesic/OpenVacant
+After=network-online.target redis-server.service
+Requires=redis-server.service
+
+# Runs the nightly key figure snapshot and the retention rules. Exactly one beat
+# process must run per installation, or every scheduled job fires twice.
 
 [Service]
 Type=simple
@@ -12,20 +16,21 @@ EnvironmentFile=/opt/openvacant/backend/.env
 
 ExecStart=/opt/openvacant/venv/bin/celery -A core beat \
     --loglevel=info \
-    --logfile=/var/log/openvacant/celerybeat.log \
-    --schedule=/opt/openvacant/backend/celerybeat-schedule
+    --schedule=/var/lib/openvacant/celerybeat-schedule \
+    --logfile=/var/log/openvacant/celerybeat.log
 
 Restart=on-failure
 RestartSec=5
 KillSignal=SIGTERM
 TimeoutStopSec=30
 
-# Hardening
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/openvacant/backend /var/log/openvacant
+RestrictSUIDSGID=true
+LockPersonality=true
+ReadWritePaths=/var/lib/openvacant /var/log/openvacant
 
 [Install]
 WantedBy=multi-user.target

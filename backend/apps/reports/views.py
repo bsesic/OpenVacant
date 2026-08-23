@@ -16,7 +16,7 @@ from apps.municipalities.models import Module
 from apps.properties.choices import VACANCY_STATUSES
 from apps.properties.models import Property
 from apps.reports.forms import ReportFilterForm, ReportForm, ReportModerationForm
-from apps.reports.models import Report
+from apps.reports.models import Report, ReportPhoto
 from apps.reports.services import (
     attach_report_to_property,
     create_property_from_report,
@@ -25,6 +25,7 @@ from apps.reports.services import (
 from apps.workflows.models import TaskType, ensure_task
 from compliance.audit import LogSensitiveAccessMixin
 from compliance.models import AccessCategory
+from core.protected import serve_protected_file
 from organizations.mixins import (
     CurrentOrganizationRequiredMixin,
     InternalAreaRequiredMixin,
@@ -197,7 +198,7 @@ class PublicMapDataView(View):
         """The first released photograph of a released record, if there is one."""
         for document in record.documents.all():
             if document.is_public and document.kind == DocumentKind.PHOTO:
-                return document.file.url
+                return document.get_download_url()
         return None
 
 
@@ -342,6 +343,24 @@ class ReportAttachView(_ReportActionView):
         attach_report_to_property(report, record, actor=request.user)
         messages.success(request, _("Report attached to the record."))
         return redirect(record.get_absolute_url())
+
+
+class ReportPhotoDownloadView(View):
+    """Deliver a report photograph to somebody entitled to it."""
+
+    def get(self, request, pk, photo_pk):
+        photo = get_object_or_404(
+            ReportPhoto.objects.select_related("report"), pk=photo_pk, report_id=pk
+        )
+        if not photo.is_public:
+            organization = getattr(request, "organization", None)
+            if (
+                organization is None
+                or organization.pk != photo.report.organization_id
+                or not organization.has_internal_access(request.user)
+            ):
+                raise PermissionDenied
+        return serve_protected_file(photo.image)
 
 
 class ReportPhotoPublicationView(_ReportActionView):
