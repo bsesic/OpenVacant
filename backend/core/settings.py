@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     # GeoDjango: geometry fields, spatial lookups and the admin map widgets.
     "django.contrib.gis",
+    # Postgres-specific features: full-text search on the property record.
+    "django.contrib.postgres",
     # Third party
     "rest_framework",
     "rest_framework.authtoken",
@@ -75,6 +77,9 @@ INSTALLED_APPS = [
     "api",
     # Domain apps
     "apps.municipalities",
+    "apps.parcels",
+    "apps.properties",
+    "apps.vacancies",
 ]
 
 MIDDLEWARE = [
@@ -366,13 +371,6 @@ SPECTACULAR_SETTINGS = {
 
 # allauth headless: JSON auth endpoints for SPA/mobile (session + app tokens).
 HEADLESS_ONLY = False
-
-# --- Search ----------------------------------------------------------------
-# "database" = Postgres full-text search (default, no extra infra).
-# "elasticsearch" = use an Elasticsearch cluster at ELASTICSEARCH_URL.
-SEARCH_BACKEND = env("SEARCH_BACKEND", default="database")
-ELASTICSEARCH_URL = env("ELASTICSEARCH_URL", default="http://127.0.0.1:9200")
-ELASTICSEARCH_INDEX = env("ELASTICSEARCH_INDEX", default="documents")
 
 # --- Activity stream -------------------------------------------------------
 ACTSTREAM_SETTINGS = {

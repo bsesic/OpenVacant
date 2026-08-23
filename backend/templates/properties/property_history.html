@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "History" %} · {{ property_record.reference }}{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">{% trans "History" %}</h1>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ property_record.get_absolute_url }}">
+      {% trans "Back to the record" %}
+    </a>
+  </div>
+  <p class="text-muted small">
+    <code>{{ property_record.reference }}</code> · {{ property_record.address_line }}
+  </p>
+
+  <h2 class="h6 text-uppercase text-muted mt-4">{% trans "Status changes" %}</h2>
+  <ul class="list-group list-group-flush mb-4">
+    {% for transition in transitions %}
+      <li class="list-group-item px-0 small">
+        {{ transition.get_from_status_display }} → <strong>{{ transition.get_to_status_display }}</strong>
+        <span class="text-muted">
+          {{ transition.created_at|date:"SHORT_DATETIME_FORMAT" }}
+          {% if transition.actor %}· {{ transition.actor }}{% endif %}
+        </span>
+        {% if transition.reason %}<br><span class="text-muted">{{ transition.reason }}</span>{% endif %}
+        {% if transition.note %}<br>{{ transition.note|linebreaksbr }}{% endif %}
+      </li>
+    {% empty %}
+      <li class="list-group-item px-0 text-muted small">{% trans "No status changes." %}</li>
+    {% endfor %}
+  </ul>
+
+  <h2 class="h6 text-uppercase text-muted">{% trans "Field changes" %}</h2>
+  <ul class="list-group list-group-flush">
+    {% for entry in history %}
+      <li class="list-group-item px-0 small">
+        {{ entry.history_date|date:"SHORT_DATETIME_FORMAT" }}
+        · {{ entry.get_history_type_display }}
+        {% if entry.history_user %}· {{ entry.history_user }}{% endif %}
+      </li>
+    {% empty %}
+      <li class="list-group-item px-0 text-muted small">{% trans "No changes recorded." %}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
