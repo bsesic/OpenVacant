@@ -23,6 +23,8 @@ from apps.reports.services import (
     start_verification,
 )
 from apps.workflows.models import TaskType, ensure_task
+from compliance.audit import LogSensitiveAccessMixin
+from compliance.models import AccessCategory
 from organizations.mixins import (
     CurrentOrganizationRequiredMixin,
     InternalAreaRequiredMixin,
@@ -243,11 +245,26 @@ class ReportListView(
 
 
 class ReportDetailView(
-    CurrentOrganizationRequiredMixin, InternalAreaRequiredMixin, OrgScopedQuerysetMixin, DetailView
+    LogSensitiveAccessMixin,
+    CurrentOrganizationRequiredMixin,
+    InternalAreaRequiredMixin,
+    OrgScopedQuerysetMixin,
+    DetailView,
 ):
+    """The full report, including the reporter's contact details.
+
+    Access is logged, because this page shows personal data about a member of
+    the public who has not consented to it being browsed.
+    """
+
     model = Report
     template_name = "reports/report_detail.html"
     context_object_name = "report"
+    access_category = AccessCategory.REPORTER_CONTACT
+
+    def should_log_access(self):
+        # Nothing personal is on show when the reporter left no details.
+        return self.object.has_contact_details or not self.object.is_anonymous
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

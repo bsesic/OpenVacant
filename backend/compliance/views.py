@@ -7,7 +7,9 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views import View
 
+from compliance.audit import log_access
 from compliance.exporters import collect_personal_data
+from compliance.models import AccessCategory
 
 
 class DataExportView(LoginRequiredMixin, View):
@@ -38,6 +40,12 @@ class DataExportView(LoginRequiredMixin, View):
             ],
         }
         data.update(collect_personal_data(user))
+        log_access(
+            user,
+            AccessCategory.DATA_EXPORT,
+            object_reference=user.get_username(),
+            purpose="Self-service data export",
+        )
         response = JsonResponse(data, json_dumps_params={"indent": 2})
         response["Content-Disposition"] = 'attachment; filename="my-data.json"'
         return response

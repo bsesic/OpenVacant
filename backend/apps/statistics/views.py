@@ -8,6 +8,8 @@ from django.views.generic import TemplateView
 from apps.properties.models import Property
 from apps.statistics.models import KeyFigureSnapshot
 from apps.statistics.services import breakdowns, dashboard_context, key_figures
+from compliance.audit import log_access
+from compliance.models import AccessCategory
 from organizations.mixins import CurrentOrganizationRequiredMixin, InternalAreaRequiredMixin
 
 
@@ -81,6 +83,13 @@ class KeyFigureExportView(CurrentOrganizationRequiredMixin, InternalAreaRequired
         organization = request.organization
         figures = key_figures(organization)
         parts = breakdowns(organization)
+        log_access(
+            request.user,
+            AccessCategory.BULK_EXPORT,
+            organization=organization,
+            object_reference="key-figures",
+            purpose="Key figure export",
+        )
 
         response = HttpResponse(content_type="text/csv; charset=utf-8")
         response["Content-Disposition"] = 'attachment; filename="key-figures.csv"'

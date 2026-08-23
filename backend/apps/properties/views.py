@@ -16,6 +16,8 @@ from apps.properties.forms import (
 from apps.properties.models import Property, PropertyDamage
 from apps.properties.search import search_properties
 from apps.vacancies.models import vacancy_duration_days
+from compliance.audit import LogSensitiveAccessMixin
+from compliance.models import AccessCategory
 from organizations.mixins import (
     CurrentOrganizationRequiredMixin,
     InternalAreaRequiredMixin,
@@ -62,11 +64,15 @@ class PropertyListView(
 
 
 class PropertyDetailView(
+    LogSensitiveAccessMixin,
     CurrentOrganizationRequiredMixin,
     InternalAreaRequiredMixin,
     OrgScopedQuerysetMixin,
     DetailView,
 ):
+    """The full record, including its internal notes and research."""
+
+    access_category = AccessCategory.INTERNAL_NOTES
     model = Property
     template_name = "properties/property_detail.html"
     context_object_name = "property_record"

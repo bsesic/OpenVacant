@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Access log" %}{% endblock %}
+
+{% block content %}
+  <h1 class="h3 mb-1">{% trans "Access log" %}</h1>
+  <p class="text-muted small">
+    {% trans "Recorded access to personal and internal data. Kept as evidence, and deleted itself once its retention period expires." %}
+  </p>
+
+  <form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-md-4">
+      <label class="form-label small" for="category">{% trans "Category" %}</label>
+      <select class="form-select form-select-sm" name="category" id="category">
+        <option value="">{% trans "all" %}</option>
+        {% for value, label in categories %}
+          <option value="{{ value }}" {% if value == selected_category %}selected{% endif %}>
+            {{ label }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-outline-secondary btn-sm w-100" type="submit">
+        {% trans "Filter" %}
+      </button>
+    </div>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>{% trans "When" %}</th>
+          <th>{% trans "Who" %}</th>
+          <th>{% trans "Category" %}</th>
+          <th>{% trans "Object" %}</th>
+          <th>{% trans "Purpose" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in entries %}
+          <tr>
+            <td class="small">{{ entry.created_at|date:"SHORT_DATETIME_FORMAT" }}</td>
+            <td class="small">{{ entry.actor_label|default:entry.actor|default:"—" }}</td>
+            <td class="small">{{ entry.get_category_display }}</td>
+            <td class="small"><code>{{ entry.object_reference|default:"—" }}</code></td>
+            <td class="small text-muted">{{ entry.purpose|default:"—" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-muted">{% trans "No entries." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% include "partials/pagination.html" %}
+{% endblock %}
