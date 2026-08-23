@@ -2,7 +2,7 @@ import pytest
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.urls import reverse
 
-from apps.municipalities.models import District, Module, Municipality
+from apps.municipalities.models import District, Module
 from apps.municipalities.resolution import (
     map_defaults,
     municipality_for_host,
@@ -16,24 +16,6 @@ def _square(x, y, size=0.1):
     return Polygon(
         ((x, y), (x + size, y), (x + size, y + size), (x, y + size), (x, y))
     )
-
-
-@pytest.fixture
-def make_municipality(make_tenant):
-    counter = {"n": 0}
-
-    def _make(organization=None, name=None, boundary=None, **extra):
-        counter["n"] += 1
-        organization = organization or make_tenant(name=name)
-        return Municipality.objects.create(
-            organization=organization,
-            name=name or f"Municipality {counter['n']}",
-            state=extra.pop("state", "SN"),
-            boundary=boundary,
-            **extra,
-        )
-
-    return _make
 
 
 # --- Modules ---------------------------------------------------------------

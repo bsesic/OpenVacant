@@ -73,3 +73,40 @@ def make_member(make_user, make_tenant):
         return user, organization
 
     return _make
+
+
+@pytest.fixture
+def make_municipality(make_tenant):
+    """Factory for municipalities, creating the tenant behind them if needed."""
+    from apps.municipalities.models import Municipality
+
+    counter = {"n": 0}
+
+    def _make(organization=None, name=None, **extra):
+        counter["n"] += 1
+        organization = organization or make_tenant(name=name)
+        return Municipality.objects.create(
+            organization=organization,
+            name=name or f"Municipality {counter['n']}",
+            state=extra.pop("state", "SN"),
+            **extra,
+        )
+
+    return _make
+
+
+@pytest.fixture
+def municipal_staff(make_member, make_municipality):
+    """A staff user, their tenant and its municipality, ready for domain tests."""
+    from organizations.models import Role
+
+    def _make(role=Role.BUILDING_AUTHORITY, username=None, organization=None, **extra):
+        user, organization = make_member(
+            role=role, organization=organization, username=username
+        )
+        municipality = getattr(organization, "municipality", None)
+        if municipality is None:
+            municipality = make_municipality(organization=organization, **extra)
+        return user, organization, municipality
+
+    return _make

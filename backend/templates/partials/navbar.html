@@ -48,6 +48,17 @@
                   </a>
                 </li>
                 <li>
+                  <a class="dropdown-item" href="{% url 'properties:list' %}">
+                    {% trans "Property records" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'properties:parcels' %}">
+                    {% trans "Parcels" %}
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
                   <a class="dropdown-item" href="{% url 'municipalities:districts' %}">
                     {% trans "Districts" %}
                   </a>

@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{{ property_record.reference }}{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+    <div>
+      <h1 class="h3 mb-1">{{ property_record.address_line }}</h1>
+      <p class="text-muted small mb-0">
+        <code>{{ property_record.reference }}</code> ·
+        {{ property_record.get_property_type_display }} ·
+        {{ property_record.district.name|default:_("no district") }}
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-sm btn-outline-secondary"
+         href="{% url 'properties:history' property_record.pk %}">{% trans "History" %}</a>
+      {% if can_edit %}
+        <a class="btn btn-sm btn-primary"
+           href="{% url 'properties:edit' property_record.pk %}">{% trans "Edit" %}</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <span class="badge text-bg-secondary">{{ property_record.get_status_display }}</span>
+    <span class="badge text-bg-light">{{ property_record.get_vacancy_status_display }}</span>
+    <span class="badge text-bg-light">{{ property_record.get_condition_display }}</span>
+    {% if property_record.is_critical %}
+      <span class="badge text-bg-danger">{% trans "Critical condition" %}</span>
+    {% endif %}
+    {% if property_record.is_heritage_protected %}
+      <span class="badge text-bg-info">{% trans "Heritage protected" %}</span>
+    {% endif %}
+    {% if property_record.in_redevelopment_area %}
+      <span class="badge text-bg-info">{% trans "Redevelopment area" %}</span>
+    {% endif %}
+    {% if property_record.in_funding_area %}
+      <span class="badge text-bg-info">{% trans "Funding area" %}</span>
+    {% endif %}
+    {% if property_record.is_public %}
+      <span class="badge text-bg-success">{% trans "Published" %}</span>
+    {% else %}
+      <span class="badge text-bg-warning">{% trans "Not published" %}</span>
+    {% endif %}
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <h2 class="h6 text-uppercase text-muted">{% trans "Record" %}</h2>
+      <dl class="row small">
+        <dt class="col-5">{% trans "Last known use" %}</dt>
+        <dd class="col-7">{{ property_record.get_last_known_use_display }}</dd>
+        <dt class="col-5">{% trans "Condition assessed by" %}</dt>
+        <dd class="col-7">
+          {{ property_record.get_condition_source_display }}
+          {% if not property_record.is_expert_assessed %}
+            <span class="text-muted">{% trans "(not an expert assessment)" %}</span>
+          {% endif %}
+        </dd>
+        <dt class="col-5">{% trans "Priority" %}</dt>
+        <dd class="col-7">{{ property_record.get_priority_display }}</dd>
+        <dt class="col-5">{% trans "Recorded on" %}</dt>
+        <dd class="col-7">{{ property_record.recorded_on }}</dd>
+        <dt class="col-5">{% trans "Last checked" %}</dt>
+        <dd class="col-7">{{ property_record.last_checked_on|default:"—" }}</dd>
+        {% if vacancy_days %}
+          <dt class="col-5">{% trans "Vacant for" %}</dt>
+          <dd class="col-7">{% blocktrans count days=vacancy_days %}{{ days }} day{% plural %}{{ days }} days{% endblocktrans %}</dd>
+        {% endif %}
+        <dt class="col-5">{% trans "Year built" %}</dt>
+        <dd class="col-7">{{ property_record.year_built|default:"—" }}</dd>
+        <dt class="col-5">{% trans "Plot area" %}</dt>
+        <dd class="col-7">{{ property_record.plot_area_sqm|default:"—" }}</dd>
+        <dt class="col-5">{% trans "Usable area" %}</dt>
+        <dd class="col-7">{{ property_record.usable_area_sqm|default:"—" }}</dd>
+        <dt class="col-5">{% trans "Living area" %}</dt>
+        <dd class="col-7">{{ property_record.living_area_sqm|default:"—" }}</dd>
+        <dt class="col-5">{% trans "Units (vacant / total)" %}</dt>
+        <dd class="col-7">
+          {{ property_record.units_vacant|default:"—" }} / {{ property_record.units_total|default:"—" }}
+        </dd>
+        <dt class="col-5">{% trans "Parcels" %}</dt>
+        <dd class="col-7">
+          {% for parcel in property_record.parcels.all %}
+            <code>{{ parcel.label }}</code>{% if not forloop.last %}, {% endif %}
+          {% empty %}—{% endfor %}
+        </dd>
+      </dl>
+
+      <h2 class="h6 text-uppercase text-muted mt-4">{% trans "Public description" %}</h2>
+      <p class="small">{{ property_record.public_description|linebreaksbr|default:"—" }}</p>
+
+      <h2 class="h6 text-uppercase text-muted mt-3">
+        {% trans "Internal notes" %}
+        <span class="badge text-bg-dark">{% trans "internal" %}</span>
+      </h2>
+      <p class="small">{{ property_record.internal_description|linebreaksbr|default:"—" }}</p>
+
+      <h2 class="h6 text-uppercase text-muted mt-3">{% trans "Sources" %}</h2>
+      <p class="small">{{ property_record.sources|linebreaksbr|default:"—" }}</p>
+    </div>
+
+    <div class="col-lg-5">
+      <h2 class="h6 text-uppercase text-muted">{% trans "Damages" %}</h2>
+      <ul class="list-group list-group-flush mb-3">
+        {% for damage in damages %}
+          <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+            <span class="small">
+              {{ damage.get_damage_type_display }}
+              <span class="text-muted">{{ damage.get_severity_display }}</span>
+              <br><span class="text-muted">{{ damage.get_source_display }}</span>
+            </span>
+            {% if can_edit %}
+              <form method="post"
+                    action="{% url 'properties:damage_delete' property_record.pk damage.pk %}"
+                    class="m-0">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-outline-danger">{% trans "Remove" %}</button>
+              </form>
+            {% endif %}
+          </li>
+        {% empty %}
+          <li class="list-group-item px-0 text-muted small">{% trans "No damages recorded." %}</li>
+        {% endfor %}
+      </ul>
+
+      {% if can_edit %}
+        <details class="mb-4">
+          <summary class="small">{% trans "Record a damage" %}</summary>
+          <form method="post" action="{% url 'properties:damage_create' property_record.pk %}"
+                class="mt-2">
+            {% csrf_token %}
+            {{ damage_form|crispy }}
+            <button class="btn btn-sm btn-primary">{% trans "Add damage" %}</button>
+          </form>
+        </details>
+
+        <h2 class="h6 text-uppercase text-muted">{% trans "Change status" %}</h2>
+        {% if transition_form.fields.status.choices %}
+          <form method="post" action="{% url 'properties:transition' property_record.pk %}"
+                class="mb-4">
+            {% csrf_token %}
+            {{ transition_form|crispy }}
+            <button class="btn btn-sm btn-primary">{% trans "Change status" %}</button>
+          </form>
+        {% else %}
+          <p class="small text-muted">{% trans "No further status change is possible." %}</p>
+        {% endif %}
+
+        <h2 class="h6 text-uppercase text-muted">{% trans "Record occupancy" %}</h2>
+        <form method="post" action="{% url 'properties:occupancy' property_record.pk %}"
+              class="mb-4">
+          {% csrf_token %}
+          {{ vacancy_form|crispy }}
+          <button class="btn btn-sm btn-primary">{% trans "Record occupancy" %}</button>
+        </form>
+
+        <h2 class="h6 text-uppercase text-muted">{% trans "Publication" %}</h2>
+        <form method="post" action="{% url 'properties:publication' property_record.pk %}">
+          {% csrf_token %}
+          <p class="small text-muted">
+            {% trans "Only published records appear on the public map and in the public API. Internal notes are never published." %}
+          </p>
+          <button class="btn btn-sm {% if property_record.is_public %}btn-outline-warning{% else %}btn-outline-success{% endif %}">
+            {% if property_record.is_public %}{% trans "Withdraw" %}{% else %}{% trans "Publish" %}{% endif %}
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <h2 class="h6 text-uppercase text-muted mt-4">{% trans "Occupancy history" %}</h2>
+  <ul class="list-group list-group-flush mb-4">
+    {% for period in vacancy_periods %}
+      <li class="list-group-item px-0 small">
+        {{ period.get_status_display }}
+        <span class="text-muted">
+          {{ period.started_on }} – {{ period.ended_on|default:_("ongoing") }}
+        </span>
+        {% if period.source %}<span class="text-muted">· {{ period.source }}</span>{% endif %}
+      </li>
+    {% empty %}
+      <li class="list-group-item px-0 text-muted small">{% trans "No occupancy history yet." %}</li>
+    {% endfor %}
+  </ul>
+
+  <h2 class="h6 text-uppercase text-muted">{% trans "Status changes" %}</h2>
+  <ul class="list-group list-group-flush">
+    {% for transition in transitions %}
+      <li class="list-group-item px-0 small">
+        {{ transition.get_from_status_display }} → <strong>{{ transition.get_to_status_display }}</strong>
+        <span class="text-muted">
+          {{ transition.created_at|date:"SHORT_DATETIME_FORMAT" }}
+          {% if transition.actor %}· {{ transition.actor }}{% endif %}
+        </span>
+        {% if transition.reason %}<br><span class="text-muted">{{ transition.reason }}</span>{% endif %}
+      </li>
+    {% empty %}
+      <li class="list-group-item px-0 text-muted small">{% trans "No status changes yet." %}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
