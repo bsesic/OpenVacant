@@ -41,6 +41,7 @@ urlpatterns = [
     path("heritage/", include("apps.heritage.urls")),
     path("documents/", include("apps.documents.urls")),
     path("dashboard/", include("apps.statistics.urls")),
+    path("api-clients/", include("apps.integrations.urls")),
     path("billing/", include("billing.urls")),
     path("notifications/", include("notifications.urls")),
     path("newsletter/", include("newsletter.urls")),
