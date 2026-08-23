@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete document" %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <h1 class="h3 mb-3">{% trans "Delete document" %}</h1>
+      <p>
+        {% blocktrans with title=object.title %}
+          Delete “{{ title }}” permanently?
+        {% endblocktrans %}
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
+        <a class="btn btn-outline-secondary" href="{{ object.property.get_absolute_url }}">
+          {% trans "Cancel" %}
+        </a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

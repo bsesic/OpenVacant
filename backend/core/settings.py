@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     "newsletter",
     "api",
     # Domain apps
+    "apps.documents",
     "apps.geodata",
     "apps.heritage",
     "apps.inspections",

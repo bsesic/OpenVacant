@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Documents" %}{% endblock %}
+
+{% block content %}
+  <h1 class="h3 mb-1">{% trans "Documents" %}</h1>
+  <p class="text-muted small">
+    {% trans "Files belonging to the records of this municipality. Internal documents never leave the administration." %}
+  </p>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>{% trans "Title" %}</th>
+          <th>{% trans "Kind" %}</th>
+          <th>{% trans "Record" %}</th>
+          <th>{% trans "Visibility" %}</th>
+          <th>{% trans "Uploaded" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for document in documents %}
+          <tr>
+            <td><a href="{{ document.file.url }}" rel="noopener">{{ document.title }}</a></td>
+            <td>{{ document.get_kind_display }}</td>
+            <td>
+              <a href="{{ document.property.get_absolute_url }}">
+                <code>{{ document.property.reference }}</code>
+              </a>
+            </td>
+            <td>
+              {% if document.is_public %}
+                <span class="badge text-bg-success">{% trans "public" %}</span>
+              {% else %}
+                <span class="badge text-bg-dark">{% trans "internal" %}</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted">
+              {{ document.uploaded_at|date:"SHORT_DATE_FORMAT" }}
+              {% if document.uploaded_by %}· {{ document.uploaded_by }}{% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-muted">{% trans "No documents yet." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% include "partials/pagination.html" %}
+{% endblock %}

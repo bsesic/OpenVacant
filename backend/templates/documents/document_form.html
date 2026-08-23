@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{% trans "Upload document" %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <h1 class="h3 mb-1">{% trans "Upload document" %}</h1>
+      <p class="text-muted small">
+        <code>{{ property_record.reference }}</code> · {{ property_record.address_line }}
+      </p>
+      <p class="text-muted small">
+        {% trans "Documents are internal unless released deliberately. Correspondence, land registry extracts and expert reports can never be published." %}
+      </p>
+      {% crispy form %}
+    </div>
+  </div>
+{% endblock %}
