@@ -1,7 +1,12 @@
 {% load i18n %}
 <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
   <div class="container">
-    <a class="navbar-brand" href="{% url 'pages:home' %}">OpenVacant</a>
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'pages:home' %}">
+      {% if municipality.logo %}
+        <img src="{{ municipality.logo.url }}" alt="" height="28">
+      {% endif %}
+      <span>{{ municipality_name|default:"OpenVacant" }}</span>
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
             data-bs-target="#mainNav" aria-controls="mainNav"
             aria-expanded="false" aria-label="{% trans 'Toggle navigation' %}">
@@ -43,8 +48,20 @@
                   </a>
                 </li>
                 <li>
+                  <a class="dropdown-item" href="{% url 'municipalities:districts' %}">
+                    {% trans "Districts" %}
+                  </a>
+                </li>
+                {% if municipality %}
+                  <li>
+                    <a class="dropdown-item" href="{% url 'municipalities:detail' municipality.pk %}">
+                      {% trans "Municipality" %}
+                    </a>
+                  </li>
+                {% endif %}
+                <li>
                   <a class="dropdown-item" href="{% url 'organizations:list' %}">
-                    {% trans "Manage organizations" %}
+                    {% trans "Manage tenants" %}
                   </a>
                 </li>
               </ul>

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Districts" %}{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">{% trans "Districts" %}</h1>
+    {% if can_manage %}
+      <a class="btn btn-sm btn-primary" href="{% url 'municipalities:district_create' %}">
+        {% trans "Add district" %}
+      </a>
+    {% endif %}
+  </div>
+
+  <p class="text-muted small">
+    {% trans "Districts are the unit statistics are reported per. Boundaries come from imported geodata." %}
+  </p>
+
+  <ul class="list-group">
+    {% for district in districts %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ district.name }}</strong>
+          <span class="text-muted small">{{ district.get_kind_display }}</span>
+          {% if district.code %}<code class="small">{{ district.code }}</code>{% endif %}
+          {% if not district.boundary %}
+            <span class="badge text-bg-warning">{% trans "no boundary" %}</span>
+          {% endif %}
+        </div>
+        {% if can_manage %}
+          <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-secondary"
+               href="{% url 'municipalities:district_edit' district.pk %}">{% trans "Edit" %}</a>
+            <a class="btn btn-sm btn-outline-danger"
+               href="{% url 'municipalities:district_delete' district.pk %}">{% trans "Delete" %}</a>
+          </div>
+        {% endif %}
+      </li>
+    {% empty %}
+      <li class="list-group-item text-muted">{% trans "No districts recorded yet." %}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

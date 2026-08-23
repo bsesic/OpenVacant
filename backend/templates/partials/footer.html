@@ -3,7 +3,7 @@
   <div class="container">
     <div class="row gy-3">
       <div class="col-md-6">
-        <span class="text-muted small">&copy; {% now "Y" %} OpenVacant</span>
+        <span class="text-muted small">&copy; {% now "Y" %} {{ municipality_name|default:"OpenVacant" }}</span>
       </div>
       <div class="col-md-3">
         <ul class="list-unstyled small mb-0">

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete district" %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <h1 class="h3 mb-3">{% trans "Delete district" %}</h1>
+      <p>
+        {% blocktrans with name=object.name %}
+          Delete the district “{{ name }}”? Properties keep their address but lose
+          their district assignment.
+        {% endblocktrans %}
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
+        <a class="btn btn-outline-secondary" href="{% url 'municipalities:districts' %}">
+          {% trans "Cancel" %}
+        </a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

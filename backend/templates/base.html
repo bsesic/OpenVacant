@@ -5,17 +5,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{% block title %}{% endblock %}{% block title_suffix %} · OpenVacant{% endblock %}</title>
+    <title>{% block title %}{% endblock %}{% block title_suffix %} · {{ municipality_name|default:"OpenVacant" }}{% endblock %}</title>
 
     {# SEO / Open Graph — override per page. #}
     <meta name="description" content="{% block meta_description %}{% endblock %}">
-    <meta property="og:title" content="{% block og_title %}{% block og_title_default %}OpenVacant{% endblock %}{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}{% block og_title_default %}{{ municipality_name|default:"OpenVacant" }}{% endblock %}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{% endblock %}">
     <meta property="og:type" content="website">
     <link rel="canonical" href="{% block canonical %}{{ request.build_absolute_uri }}{% endblock %}">
 
+    {% if municipality.coat_of_arms %}
+      <link rel="icon" href="{{ municipality.coat_of_arms.url }}">
+    {% endif %}
+
     {% vite_hmr_client %}
     {% vite_asset 'src/main.js' %}
+    {% include "partials/branding.html" %}
     {% include "partials/analytics.html" %}
     {% block extra_css %}{% endblock %}
   </head>

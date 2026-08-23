@@ -17,6 +17,9 @@ crispy-bootstrap5>=2024.10
 # Frontend assets (Vite pipeline)
 django-vite>=3.0
 
+# Image handling for logos, coats of arms and report photos
+Pillow>=11.0
+
 # Billing (Phase 5)
 stripe>=11.0
 
