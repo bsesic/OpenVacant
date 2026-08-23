@@ -59,7 +59,17 @@ class GeoLayerViewSet(
         return GeoLayer.objects.for_organization(organization).filter(is_active=True)
 
 
-@extend_schema(tags=["integration"])
+class ApiClientSelfSerializer(serializers.Serializer):
+    """What a client is told about itself."""
+
+    name = serializers.CharField()
+    municipality = serializers.CharField()
+    scopes = serializers.ListField(child=serializers.CharField())
+    expires_at = serializers.DateTimeField(allow_null=True)
+    rate_limit = serializers.CharField()
+
+
+@extend_schema(tags=["integration"], responses=ApiClientSelfSerializer)
 class ApiClientSelfView(APIView):
     """What the calling client is and what it may do.
 
@@ -68,6 +78,7 @@ class ApiClientSelfView(APIView):
     """
 
     permission_classes = [IsAuthenticated]
+    serializer_class = ApiClientSelfSerializer
 
     def get(self, request):
         client = getattr(request, "api_client", None)

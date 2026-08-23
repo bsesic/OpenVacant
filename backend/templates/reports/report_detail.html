@@ -49,7 +49,8 @@
       <div class="row g-2">
         {% for photo in photos %}
           <div class="col-6 col-md-4">
-            <img src="{{ photo.image.url }}" class="img-fluid rounded" alt="{{ photo.caption }}">
+            <img src="{% url 'reports:photo_download' report.pk photo.pk %}"
+                 class="img-fluid rounded" alt="{{ photo.caption }}">
             <div class="d-flex justify-content-between align-items-center mt-1">
               <span class="small text-muted">
                 {% if photo.is_public %}{% trans "released" %}{% else %}{% trans "internal" %}{% endif %}

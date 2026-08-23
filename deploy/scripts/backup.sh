@@ -12,7 +12,8 @@
 #   sudo systemctl daemon-reload && sudo systemctl enable --now openvacant-backup.timer
 #
 # Restore quick-reference:
-#   pg_restore -h <host> -U <user> -d <db> -j 4 -c /var/backups/openvacant/<TS>/db.dump
+#   createdb <db> && psql -d <db> -c 'CREATE EXTENSION postgis;'
+#   pg_restore -h <host> -U <user> -d <db> -j 4 /var/backups/openvacant/<TS>/db.dump
 #   tar -xzf /var/backups/openvacant/<TS>/media.tar.gz -C /opt/openvacant/backend/
 #   gpg --decrypt --passphrase-file /etc/openvacant/backup.passphrase env.gpg > backend/.env
 #
@@ -37,14 +38,19 @@ set +a
 [ -n "${DATABASE_URL:-}" ] || { echo "DATABASE_URL not set in $BACKEND_DIR/.env"; exit 1; }
 
 # --- 1. PostgreSQL (custom format, compressed) ----
-DB_USER=$(echo "$DATABASE_URL" | sed -E 's|postgres(ql)?://([^:]+):.*|\2|')
-DB_PASS=$(echo "$DATABASE_URL" | sed -E 's|postgres(ql)?://[^:]+:([^@]+)@.*|\2|')
-DB_HOST=$(echo "$DATABASE_URL" | sed -E 's|.*@([^:/]+).*|\1|')
-DB_PORT=$(echo "$DATABASE_URL" | sed -nE 's|.*:([0-9]+)/.*|\1|p'); DB_PORT="${DB_PORT:-5432}"
-DB_NAME=$(echo "$DATABASE_URL" | sed -E 's|.*/([^/?]+).*|\1|')
+# The scheme may be postgres://, postgresql:// or postgis:// — the application
+# accepts all three — so strip whichever one is there before parsing.
+DB_URL_BODY="${DATABASE_URL#*://}"
+DB_USER=$(echo "$DB_URL_BODY" | sed -E 's|^([^:@/]+).*|\1|')
+DB_PASS=$(echo "$DB_URL_BODY" | sed -nE 's|^[^:@/]+:([^@]+)@.*|\1|p')
+DB_HOST=$(echo "$DB_URL_BODY" | sed -E 's|.*@([^:/]+).*|\1|')
+DB_PORT=$(echo "$DB_URL_BODY" | sed -nE 's|.*:([0-9]+)/.*|\1|p'); DB_PORT="${DB_PORT:-5432}"
+DB_NAME=$(echo "$DB_URL_BODY" | sed -E 's|.*/([^/?]+).*|\1|')
 
 PGPASSWORD="$DB_PASS" pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" \
-    --format=custom --compress=9 --no-owner --no-privileges -f db.dump "$DB_NAME"
+    --format=custom --compress=9 --no-owner --no-privileges \
+    --exclude-table-data=spatial_ref_sys \
+    -f db.dump "$DB_NAME"
 
 # --- 2. Media (user uploads) ----
 if [ -d "$BACKEND_DIR/media" ]; then

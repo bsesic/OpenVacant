@@ -477,3 +477,41 @@ def test_report_references_are_sequential_per_tenant(instance, make_municipality
     assert a1.reference.endswith("0001")
     assert a2.reference.endswith("0002")
     assert b1.reference.endswith("0001")
+
+
+# --- Authorised photo delivery --------------------------------------------
+
+
+@pytest.mark.django_db
+def test_an_unreleased_photo_is_refused_to_the_public(client, instance, _media):
+    report = Report.objects.create(organization=instance.organization, city="Town")
+    photo = report.photos.create(
+        image=SimpleUploadedFile("x.jpg", b"\xff\xd8\xff\xdb" + b"0" * 16, "image/jpeg")
+    )
+    url = reverse("reports:photo_download", args=[report.pk, photo.pk])
+    assert client.get(url).status_code == 403
+
+
+@pytest.mark.django_db
+def test_a_released_photo_is_available_to_anyone(client, instance, _media):
+    report = Report.objects.create(organization=instance.organization, city="Town")
+    photo = report.photos.create(
+        image=SimpleUploadedFile("y.jpg", b"\xff\xd8\xff\xdb" + b"0" * 16, "image/jpeg"),
+        is_public=True,
+    )
+    url = reverse("reports:photo_download", args=[report.pk, photo.pk])
+    assert client.get(url).status_code == 200
+
+
+@pytest.mark.django_db
+def test_staff_may_see_an_unreleased_photo(client, instance, make_member, _media):
+    staff, _org = make_member(
+        role=Role.BUILDING_AUTHORITY, organization=instance.organization, username="photo_staff"
+    )
+    report = Report.objects.create(organization=instance.organization, city="Town")
+    photo = report.photos.create(
+        image=SimpleUploadedFile("z.jpg", b"\xff\xd8\xff\xdb" + b"0" * 16, "image/jpeg")
+    )
+    client.force_login(staff)
+    url = reverse("reports:photo_download", args=[report.pk, photo.pk])
+    assert client.get(url).status_code == 200

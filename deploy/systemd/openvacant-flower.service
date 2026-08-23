@@ -1,7 +1,8 @@
 [Unit]
 Description=OpenVacant - Flower (Celery monitoring)
-After=network.target redis.service
-Requires=redis.service
+Documentation=https://github.com/bsesic/OpenVacant
+After=network-online.target redis-server.service
+Requires=redis-server.service
 
 [Service]
 Type=simple
@@ -10,23 +11,24 @@ Group=openvacant
 WorkingDirectory=/opt/openvacant/backend
 EnvironmentFile=/opt/openvacant/backend/.env
 
-# Protect the dashboard with basic auth in production.
+# Bound to localhost on purpose: Flower shows task arguments, which can include
+# record references. Reach it over an SSH tunnel rather than publishing it.
 ExecStart=/opt/openvacant/venv/bin/celery -A core flower \
     --address=127.0.0.1 \
     --port=5555 \
-    --basic-auth=${FLOWER_USER}:${FLOWER_PASSWORD}
+    --url_prefix=flower
 
 Restart=on-failure
 RestartSec=5
 KillSignal=SIGTERM
 TimeoutStopSec=30
 
-# Hardening
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/openvacant/backend /var/log/openvacant
+LockPersonality=true
+ReadWritePaths=/var/log/openvacant
 
 [Install]
 WantedBy=multi-user.target

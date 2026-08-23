@@ -1,7 +1,16 @@
 [Unit]
-Description=OpenVacant - Daphne ASGI server (use instead of gunicorn for WebSockets/Channels)
-After=network.target postgresql.service redis.service
-Wants=redis.service
+Description=OpenVacant - Daphne ASGI server
+Documentation=https://github.com/bsesic/OpenVacant
+After=network-online.target postgresql.service redis-server.service
+Wants=network-online.target redis-server.service
+
+# Optional. The application is templates-first and WSGI is enough for it; run
+# Daphne instead of Gunicorn only if you add WebSocket features. Running both
+# against the same port will not work — pick one, or give Daphne its own port
+# and route /ws/ to it in NGINX.
+#
+#   systemctl disable --now openvacant-gunicorn
+#   systemctl enable  --now openvacant-daphne
 
 [Service]
 Type=simple
@@ -11,9 +20,10 @@ WorkingDirectory=/opt/openvacant/backend
 EnvironmentFile=/opt/openvacant/backend/.env
 
 ExecStart=/opt/openvacant/venv/bin/daphne \
-    -b 127.0.0.1 \
-    -p 8000 \
-    --access-log /var/log/openvacant/access.log \
+    --bind 127.0.0.1 \
+    --port 8000 \
+    --proxy-headers \
+    --access-log /var/log/openvacant/daphne-access.log \
     core.asgi:application
 
 Restart=on-failure
@@ -21,12 +31,16 @@ RestartSec=3
 KillSignal=SIGTERM
 TimeoutStopSec=30
 
-# Hardening
 NoNewPrivileges=true
 PrivateTmp=true
+PrivateDevices=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/openvacant/backend /var/log/openvacant
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+ReadWritePaths=/opt/openvacant/backend/media /opt/openvacant/backend/staticfiles /var/log/openvacant
 
 [Install]
 WantedBy=multi-user.target

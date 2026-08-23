@@ -210,7 +210,7 @@ def test_only_released_photos_reach_the_public_map(client, setup):
         organization, record, title="Front view", visibility=Visibility.PUBLIC
     )
     payload = client.get(reverse("reports:map_data")).json()
-    assert payload["features"][0]["properties"]["photo"] == released.file.url
+    assert payload["features"][0]["properties"]["photo"] == released.get_download_url()
 
 
 @pytest.mark.django_db
@@ -228,3 +228,66 @@ def test_a_released_site_plan_is_not_used_as_the_map_photo(client, setup):
     )
     payload = client.get(reverse("reports:map_data")).json()
     assert payload["features"][0]["properties"]["photo"] is None
+
+
+# --- Authorised delivery ---------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_an_internal_document_is_refused_to_the_public(client, setup):
+    """The file has no public address; the view is the only way in."""
+    _user, organization, _municipality, record = setup
+    document = _document(organization, record)
+    assert client.get(reverse("documents:download", args=[document.pk])).status_code == 403
+
+
+@pytest.mark.django_db
+def test_an_internal_document_is_refused_to_another_municipality(
+    client, setup, municipal_staff
+):
+    _user, organization, _municipality, record = setup
+    document = _document(organization, record)
+    other, _org, _mun = municipal_staff(username="other_download")
+    client.force_login(other)
+    assert client.get(reverse("documents:download", args=[document.pk])).status_code == 403
+
+
+@pytest.mark.django_db
+def test_staff_may_download_an_internal_document_and_it_is_logged(client, setup):
+    from compliance.models import AccessCategory, AccessLog
+
+    user, organization, _municipality, record = setup
+    document = _document(organization, record)
+    client.force_login(user)
+    response = client.get(reverse("documents:download", args=[document.pk]))
+    assert response.status_code == 200
+    assert AccessLog.objects.filter(category=AccessCategory.INTERNAL_DOCUMENT).count() == 1
+
+
+@pytest.mark.django_db
+def test_a_released_document_of_a_published_record_is_public(client, setup):
+    _user, organization, _municipality, record = setup
+    record.is_public = True
+    record.save(update_fields=["is_public"])
+    document = _document(organization, record, visibility=Visibility.PUBLIC)
+    assert client.get(reverse("documents:download", args=[document.pk])).status_code == 200
+
+
+@pytest.mark.django_db
+def test_a_released_document_of_an_unpublished_record_stays_closed(client, setup):
+    _user, organization, _municipality, record = setup
+    document = _document(organization, record, visibility=Visibility.PUBLIC)
+    assert record.is_public is False
+    assert client.get(reverse("documents:download", args=[document.pk])).status_code == 403
+
+
+@pytest.mark.django_db
+def test_delivery_uses_the_web_server_when_configured(client, setup, settings):
+    settings.USE_X_ACCEL_REDIRECT = True
+    settings.PROTECTED_MEDIA_LOCATION = "/protected/"
+    user, organization, _municipality, record = setup
+    document = _document(organization, record)
+    client.force_login(user)
+    response = client.get(reverse("documents:download", args=[document.pk]))
+    # The bytes are handed to NGINX rather than streamed through Python.
+    assert response["X-Accel-Redirect"].startswith("/protected/documents/")

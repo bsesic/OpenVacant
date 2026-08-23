@@ -1,3 +1,4 @@
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import RetrieveUpdateAPIView
@@ -27,6 +28,15 @@ class MeView(RetrieveUpdateAPIView):
         return self.request.user
 
 
+@extend_schema_view(
+    retrieve=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "slug", str, OpenApiParameter.PATH, description="Tenant slug."
+            )
+        ]
+    )
+)
 class OrganizationViewSet(
     mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
 ):
@@ -37,6 +47,15 @@ class OrganizationViewSet(
         return self.request.user.organizations.all()
 
 
+@extend_schema_view(
+    read=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "id", int, OpenApiParameter.PATH, description="Notification id."
+            )
+        ]
+    )
+)
 class NotificationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = NotificationSerializer
 

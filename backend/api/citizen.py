@@ -7,7 +7,7 @@ what happened to the ones they filed. Nothing here reads anybody else's data.
 from django.contrib.gis.geos import Point
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_field
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -105,6 +105,7 @@ class MyReportSerializer(serializers.Serializer):
     # administration wrote about the building.
     became_record = serializers.SerializerMethodField()
 
+    @extend_schema_field(serializers.CharField(allow_null=True))
     def get_became_record(self, obj):
         return obj.property.reference if obj.property_id else None
 

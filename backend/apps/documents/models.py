@@ -119,6 +119,15 @@ class PropertyDocument(OrganizationOwnedModel):
     def can_be_published(self):
         return self.kind not in NEVER_PUBLIC_KINDS
 
+    def get_download_url(self):
+        """Where to link this file from a template or a serializer.
+
+        Never ``file.url``: that address is not served, deliberately.
+        """
+        from django.urls import reverse
+
+        return reverse("documents:download", kwargs={"pk": self.pk})
+
     @computed
     def filename(self):
         return self.file.name.rsplit("/", 1)[-1] if self.file else ""

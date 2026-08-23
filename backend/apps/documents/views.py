@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext as _
 from django.views import View
@@ -7,12 +8,44 @@ from django.views.generic import CreateView, DeleteView, ListView
 from apps.documents.forms import PropertyDocumentForm
 from apps.documents.models import PropertyDocument, Visibility
 from apps.properties.models import Property
+from compliance.audit import log_access
+from compliance.models import AccessCategory
+from core.protected import serve_protected_file
 from organizations.mixins import (
     CurrentOrganizationRequiredMixin,
     InternalAreaRequiredMixin,
     OrgScopedQuerysetMixin,
     StaffRoleRequiredMixin,
 )
+
+
+class DocumentDownloadView(View):
+    """Deliver a document to somebody entitled to it.
+
+    A public document of a published record is available to anyone; anything
+    else needs internal access to the owning municipality. The check happens
+    here because the file itself is not reachable by URL.
+    """
+
+    def get(self, request, pk):
+        document = get_object_or_404(
+            PropertyDocument.objects.select_related("property", "organization"), pk=pk
+        )
+        if not document.is_public:
+            organization = getattr(request, "organization", None)
+            if (
+                organization is None
+                or organization.pk != document.organization_id
+                or not organization.has_internal_access(request.user)
+            ):
+                raise PermissionDenied
+            log_access(
+                request.user,
+                AccessCategory.INTERNAL_DOCUMENT,
+                organization=organization,
+                object_reference=f"{document.property.reference}/{document.title}",
+            )
+        return serve_protected_file(document.file, filename=document.filename)
 
 
 class DocumentListView(

@@ -269,6 +269,14 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Uploaded files are not served from a public location: the media root holds
+# expert reports, letters to owners and unreleased photographs next to released
+# ones. Downloads go through a view that authorises the caller, which then hands
+# the file to NGINX through this internal location. See core/protected.py and
+# deploy/nginx/openvacant.conf.
+PROTECTED_MEDIA_LOCATION = env("PROTECTED_MEDIA_LOCATION", default="/protected/")
+USE_X_ACCEL_REDIRECT = env.bool("USE_X_ACCEL_REDIRECT", default=not DEBUG)
+
 # Object storage for user uploads (S3-compatible: R2, B2, Hetzner, AWS).
 # Defaults to local filesystem; set USE_S3=True to switch.
 if env.bool("USE_S3", default=False):
@@ -405,6 +413,15 @@ SPECTACULAR_SETTINGS = {
     ),
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    # Several apps use the same choice sets; naming them explicitly keeps the
+    # generated schema readable instead of producing Category468Enum.
+    "ENUM_NAME_OVERRIDES": {
+        "ConditionGradeEnum": "apps.properties.choices.ConditionGrade.choices",
+        "VacancyStatusEnum": "apps.properties.choices.VacancyStatus.choices",
+        "RecordStatusEnum": "apps.properties.choices.RecordStatus.choices",
+        "ReportCategoryEnum": "apps.reports.models.ReportCategory.choices",
+        "DamageTypeEnum": "apps.properties.choices.DamageType.choices",
+    },
     "TAGS": [
         {"name": "public", "description": "Open data: released objects and key figures."},
         {"name": "citizen", "description": "Reporting and a reporter's own submissions."},

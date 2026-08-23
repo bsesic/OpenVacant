@@ -6,7 +6,7 @@ gated twice: by the caller's role or scope, and by the tenant.
 """
 
 from django.utils.translation import gettext_lazy as _
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_field
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
@@ -115,18 +115,22 @@ class AdminPropertySerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
+    @extend_schema_field(serializers.FloatField(allow_null=True))
     def get_latitude(self, obj):
         return obj.location.y if obj.location else None
 
+    @extend_schema_field(serializers.FloatField(allow_null=True))
     def get_longitude(self, obj):
         return obj.location.x if obj.location else None
 
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_damages(self, obj):
         return [
             {"type": damage.damage_type, "severity": damage.severity, "source": damage.source}
             for damage in obj.damages.all()
         ]
 
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_allowed_transitions(self, obj):
         return obj.allowed_transitions()
 
@@ -265,11 +269,20 @@ class AdminTaskViewSet(InternalAreaMixin, viewsets.ModelViewSet):
         serializer.save(organization=self.internal_organization())
 
 
-@extend_schema(tags=["administration"])
+class AdminStatisticsSerializer(serializers.Serializer):
+    """Shape of the administrative statistics response."""
+
+    figures = serializers.DictField(child=serializers.IntegerField())
+    breakdowns = serializers.DictField()
+    series = serializers.ListField(child=serializers.DictField())
+
+
+@extend_schema(tags=["administration"], responses=AdminStatisticsSerializer)
 class AdminStatisticsView(InternalAreaMixin, APIView):
     """The full key figures, including the operational ones."""
 
     required_scope = "read_statistics"
+    serializer_class = AdminStatisticsSerializer
 
     def get(self, request):
         organization = self.internal_organization()
