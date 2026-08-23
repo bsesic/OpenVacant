@@ -2,7 +2,7 @@ import pytest
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.urls import reverse
 
-from apps.municipalities.models import District, Module
+from apps.municipalities.models import District, Module, Municipality
 from apps.municipalities.resolution import (
     map_defaults,
     municipality_for_host,
@@ -255,3 +255,99 @@ def test_district_names_are_unique_per_municipality(make_municipality):
     District.objects.create(municipality=municipality, name="Centre")
     with pytest.raises(IntegrityError):
         District.objects.create(municipality=municipality, name="Centre")
+
+
+# --- Demonstration data ----------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_seed_demo_builds_a_browsable_instance(settings):
+    """The proof of concept has to be demonstrable from one command."""
+    from django.core.management import call_command
+
+    from apps.geodata.models import GeoLayer
+    from apps.properties.choices import RecordStatus, VacancyStatus
+    from apps.properties.models import Property
+    from apps.reports.models import Report
+    from apps.statistics.models import KeyFigureSnapshot
+    from apps.workflows.models import Task
+
+    settings.DEBUG = True
+    call_command("seed_demo", verbosity=0)
+
+    municipality = Municipality.objects.get(municipality_key="14523250")
+    organization = municipality.organization
+    assert municipality.districts.count() >= 5
+    assert municipality.boundary is not None
+
+    records = Property.objects.for_organization(organization)
+    assert records.count() >= 6
+    # The demonstration has to show every state the dashboard reports on.
+    assert records.confirmed().exists()
+    assert records.vacant().exists()
+    assert records.critical().exists()
+    assert records.public().exists()
+    assert records.filter(vacancy_status=VacancyStatus.SUSPECTED_VACANT).exists()
+    assert records.filter(status=RecordStatus.NOT_CONFIRMED).exists()
+
+    assert Report.objects.for_organization(organization).open().exists()
+    assert Task.objects.for_organization(organization).overdue().exists()
+    assert GeoLayer.objects.for_organization(organization).count() >= 3
+    assert KeyFigureSnapshot.objects.for_organization(organization).exists()
+
+    # Spatial context has to be resolved, or the flags would all read false.
+    assert records.filter(in_redevelopment_area=True).exists()
+
+
+@pytest.mark.django_db
+def test_seed_demo_accounts_can_actually_sign_in(client, settings):
+    """Email verification is mandatory, so unverified demo accounts are useless."""
+    from django.core.management import call_command
+
+    settings.DEBUG = True
+    call_command("seed_demo", verbosity=0)
+
+    logged_in = client.login(
+        username="demo.bauamt", password="demo-passwort-nur-lokal"
+    )
+    assert logged_in
+    assert client.get(reverse("statistics:dashboard")).status_code == 200
+
+
+@pytest.mark.django_db
+def test_seed_demo_keeps_internal_data_off_the_public_map(client, settings):
+    from django.core.management import call_command
+
+    settings.DEBUG = True
+    call_command("seed_demo", verbosity=0)
+
+    body = client.get(reverse("reports:map_data")).content.decode()
+    # The demonstration data contains deliberately sensitive-looking wording.
+    assert "Heirs unclear" not in body
+    assert "Erbengemeinschaft" not in body
+    assert "Gutachten" not in body
+
+
+@pytest.mark.django_db
+def test_seed_demo_refuses_to_run_in_production_without_force(settings):
+    from django.core.management import call_command
+    from django.core.management.base import CommandError
+
+    settings.DEBUG = False
+    with pytest.raises(CommandError):
+        call_command("seed_demo", verbosity=0)
+
+
+@pytest.mark.django_db
+def test_seed_demo_is_repeatable(settings):
+    """Running it twice must not duplicate the municipality or its records."""
+    from django.core.management import call_command
+
+    from apps.properties.models import Property
+
+    settings.DEBUG = True
+    call_command("seed_demo", verbosity=0)
+    first = Property.objects.count()
+    call_command("seed_demo", verbosity=0)
+    assert Municipality.objects.filter(municipality_key="14523250").count() == 1
+    assert Property.objects.count() == first

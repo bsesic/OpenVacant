@@ -9,80 +9,84 @@ Each milestone below is tracked as a GitHub issue. Checked items are merged into
 
 ## MVP — proof of concept
 
+All milestones below are merged into `development`. What remains is the
+validation the specification asks for: running the proof of concept with
+Reichenbach im Vogtland, on real geodata and real objects.
+
 ### M0 — Project foundation (#1)
-- [ ] Platform foundation imported and rebranded
-- [ ] PostGIS enabled end to end (settings, image, CI)
-- [ ] Municipal department and contributor roles
-- [ ] Citizens no longer become tenant owners on signup
-- [ ] `apps/` package for domain apps
+- [x] Platform foundation imported and rebranded
+- [x] PostGIS enabled end to end (settings, image, CI)
+- [x] Municipal department and contributor roles
+- [x] Citizens no longer become tenant owners on signup
+- [x] `apps/` package for domain apps
 
 ### M1 — Municipalities, tenancy and white label (#2)
-- [ ] `Municipality` profile on the tenant, with boundary and centre
-- [ ] `District` (Ortsteil/Quartier) with geometry
-- [ ] Branding without code changes: logo, coat of arms, colours, fonts, domain, legal texts
-- [ ] Per-municipality module toggles
-- [ ] Resolve the responsible municipality for a coordinate
+- [x] `Municipality` profile on the tenant, with boundary and centre
+- [x] `District` (Ortsteil/Quartier) with geometry
+- [x] Branding without code changes: logo, coat of arms, colours, fonts, domain, legal texts
+- [x] Per-municipality module toggles
+- [x] Resolve the responsible municipality for a coordinate
 
 ### M2 — Property record, parcels, vacancy history (#3)
-- [ ] `Property` with the full mandatory and optional field set
-- [ ] Condition grades and damage markers, separated from expert assessments
-- [ ] Status workflow with every transition logged
-- [ ] `Parcel` (Flurstück) with geometry
-- [ ] Vacancy periods so history is preserved
+- [x] `Property` with the full mandatory and optional field set
+- [x] Condition grades and damage markers, separated from expert assessments
+- [x] Status workflow with every transition logged
+- [x] `Parcel` (Flurstück) with geometry
+- [x] Vacancy periods so history is preserved
 
 ### M3 — Citizen reporting portal (#4)
-- [ ] Report with address or map marker, photos, categories, consent
-- [ ] Anonymous reporting with rate limiting and bot protection
-- [ ] Moderation queue and conversion into a property record
-- [ ] Public map with clustering and filters
+- [x] Report with address or map marker, photos, categories, consent
+- [x] Anonymous reporting with rate limiting and bot protection
+- [x] Moderation queue and conversion into a property record
+- [x] Public map with clustering and filters
 
 ### M4 — Verification and task workflow (#5)
-- [ ] On-site verification records (confirmed / not confirmed / unclear)
-- [ ] Verification by staff, project staff and verified contributors
-- [ ] Tasks with type, assignee, due date and completion
+- [x] On-site verification records (confirmed / not confirmed / unclear)
+- [x] Verification by staff, project staff and verified contributors
+- [x] Tasks with type, assignee, due date and completion
 
 ### M5 — GIS context, geocoding and heritage (#6)
-- [ ] External geo layers per municipality with categories
-- [ ] Spatial context lookup for a property
-- [ ] Geocoding and reverse geocoding with a pluggable provider
-- [ ] GeoJSON layer import, prepared for Saxon geodata and ALKIS
-- [ ] Monument records and the heritage check
+- [x] External geo layers per municipality with categories
+- [x] Spatial context lookup for a property
+- [x] Geocoding and reverse geocoding with a pluggable provider
+- [x] GeoJSON layer import, prepared for Saxon geodata and ALKIS
+- [x] Monument records and the heritage check
 
 ### M6 — Documents and media (#7)
-- [ ] Files per property with a strict public/internal split
-- [ ] S3-compatible, tenant-scoped storage
+- [x] Files per property with a strict public/internal split
+- [x] S3-compatible, tenant-scoped storage
 
 ### M7 — Dashboard and statistics (#8)
-- [ ] Key figures: recorded, confirmed, open checks, critical, per district and type
-- [ ] Time series of new and resolved cases
-- [ ] Administration dashboard with KPI tiles, map, recent reports, open tasks
+- [x] Key figures: recorded, confirmed, open checks, critical, per district and type
+- [x] Time series of new and resolved cases
+- [x] Administration dashboard with KPI tiles, map, recent reports, open tasks
 
 ### M8 — API v1 (#9)
-- [ ] Public, citizen, administrative and integration areas
-- [ ] Scoped, revocable API clients with per-client throttling
-- [ ] OpenAPI documentation
-- [ ] Tests proving the public/internal separation
+- [x] Public, citizen, administrative and integration areas
+- [x] Scoped, revocable API clients with per-client throttling
+- [x] OpenAPI documentation
+- [x] Tests proving the public/internal separation
 
 ### M9 — Participation and reputation (#10)
-- [ ] Contributor profile, points, badges, activity level
-- [ ] Quality weighted higher than quantity
+- [x] Contributor profile, points, badges, activity level
+- [x] Quality weighted higher than quantity
 
 ### M10 — Prepared modules (#11)
-- [ ] `owners`, `funding`, `federation` — migration-ready, inactive
+- [x] `owners`, `funding`, `federation` — migration-ready, inactive
 
 ### M11 — Privacy and security hardening (#12)
-- [ ] Audit log, consent records, retention and purge
-- [ ] Role-based field visibility, rate limiting, spam protection
-- [ ] API key lifecycle and permission tests
+- [x] Audit log, consent records, retention and purge
+- [x] Role-based field visibility, rate limiting, spam protection
+- [x] API key lifecycle and permission tests
 
 ### M12 — Production deployment (#13)
-- [ ] NGINX, Gunicorn/Daphne, PostGIS, Redis, email, Celery services
-- [ ] Production compose, backups, log rotation
-- [ ] Release deployment and rollback
+- [x] NGINX, Gunicorn/Daphne, PostGIS, Redis, email, Celery services
+- [x] Production compose, backups, log rotation
+- [x] Release deployment and rollback
 
 ### M13 — Reichenbach seed data and documentation (#14)
-- [ ] `seed_demo` for the proof of concept
-- [ ] Architecture, getting started, API guide, ADRs
+- [x] `seed_demo` for the proof of concept
+- [x] Architecture, getting started, API guide, ADRs
 
 ## Success criteria for the proof of concept
 
