@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     "apps.geodata",
     "apps.heritage",
     "apps.inspections",
+    "apps.integrations",
     "apps.municipalities",
     "apps.parcels",
     "apps.properties",
@@ -355,15 +356,27 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
+        # External systems authenticate with a scoped, revocable API key.
+        "apps.integrations.authentication.ApiKeyAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_THROTTLE_CLASSES": (
         "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle",
+        # Per-person limit, skipped for key callers so they do not share a bucket.
+        "apps.integrations.authentication.HumanUserRateThrottle",
+        # Each client carries its own rate, so one busy integration cannot
+        # starve the others.
+        "apps.integrations.authentication.ApiClientThrottle",
     ),
-    "DEFAULT_THROTTLE_RATES": {"anon": "60/min", "user": "1000/hour"},
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/min",
+        "user": "1000/hour",
+        "api_client": "1000/hour",
+        # Submitting a report over the API is limited like the web form.
+        "report_submission": "10/hour",
+    },
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
     "ALLOWED_VERSIONS": ["v1"],
     "DEFAULT_VERSION": "v1",
@@ -372,9 +385,28 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "OpenVacant API",
-    "DESCRIPTION": "Vacancy register API for municipalities.",
+    "DESCRIPTION": (
+        "Vacancy register API for municipalities.\n\n"
+        "Four separated areas:\n\n"
+        "- **public** — objects a municipality has released, and aggregated key "
+        "figures. Never contains personal or internal data.\n"
+        "- **citizen** — submit a report, and read your own reports.\n"
+        "- **administration** — the professional data, for municipal staff and "
+        "for clients explicitly granted internal access.\n"
+        "- **integration** — geodata layer metadata and the calling client's own "
+        "scopes.\n\n"
+        "External systems authenticate with `Authorization: ApiKey <key>`. Keys "
+        "carry an explicit list of scopes, can expire, and can be revoked or "
+        "rotated by the municipality at any time."
+    ),
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "TAGS": [
+        {"name": "public", "description": "Open data: released objects and key figures."},
+        {"name": "citizen", "description": "Reporting and a reporter's own submissions."},
+        {"name": "administration", "description": "Professional data, role or scope gated."},
+        {"name": "integration", "description": "Geodata metadata and client introspection."},
+    ],
 }
 
 # allauth headless: JSON auth endpoints for SPA/mobile (session + app tokens).

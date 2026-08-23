@@ -109,6 +109,11 @@
                   </li>
                 {% endif %}
                 <li>
+                  <a class="dropdown-item" href="{% url 'integrations:clients' %}">
+                    {% trans "API clients" %}
+                  </a>
+                </li>
+                <li>
                   <a class="dropdown-item" href="{% url 'organizations:list' %}">
                     {% trans "Manage tenants" %}
                   </a>
