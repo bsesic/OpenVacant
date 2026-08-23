@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenVacant - DB + media + .env backup
+After=postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=oneshot
+User=openvacant
+Group=openvacant
+ExecStart=/usr/local/bin/openvacant-backup.sh
+Nice=15
+IOSchedulingClass=idle
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=openvacant-backup

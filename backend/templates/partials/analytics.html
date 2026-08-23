@@ -1,0 +1,16 @@
+{% if ANALYTICS_PROVIDER == "plausible" and PLAUSIBLE_DOMAIN %}
+  <script defer data-domain="{{ PLAUSIBLE_DOMAIN }}" src="{{ PLAUSIBLE_SRC }}"></script>
+{% elif ANALYTICS_PROVIDER == "matomo" and MATOMO_URL and MATOMO_SITE_ID %}
+  <script>
+    var _paq = window._paq = window._paq || [];
+    _paq.push(["trackPageView"]);
+    _paq.push(["enableLinkTracking"]);
+    (function () {
+      var u = "{{ MATOMO_URL }}";
+      _paq.push(["setTrackerUrl", u + "matomo.php"]);
+      _paq.push(["setSiteId", "{{ MATOMO_SITE_ID }}"]);
+      var d = document, g = d.createElement("script"), s = d.getElementsByTagName("script")[0];
+      g.async = true; g.src = u + "matomo.js"; s.parentNode.insertBefore(g, s);
+    })();
+  </script>
+{% endif %}

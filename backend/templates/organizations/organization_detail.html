@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{{ organization.name }}{% endblock %}
+
+{% block content %}
+  <h1 class="h3 mb-3">{{ organization.name }}</h1>
+
+  <h2 class="h5">{% trans "Members" %}</h2>
+  <table class="table align-middle">
+    <thead>
+      <tr>
+        <th>{% trans "User" %}</th>
+        <th>{% trans "Role" %}</th>
+        {% if can_manage %}<th class="text-end">{% trans "Actions" %}</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for membership in memberships %}
+        <tr>
+          <td>{{ membership.user.username }}</td>
+          <td>{{ membership.get_role_display }}</td>
+          {% if can_manage %}
+            <td class="text-end">
+              <form method="post"
+                    action="{% url 'organizations:remove_member' organization.slug membership.pk %}"
+                    class="m-0">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-outline-danger">{% trans "Remove" %}</button>
+              </form>
+            </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if pending_invitations %}
+    <h2 class="h5 mt-4">{% trans "Pending invitations" %}</h2>
+    <ul class="list-group mb-3">
+      {% for invitation in pending_invitations %}
+        <li class="list-group-item d-flex justify-content-between">
+          <span>{{ invitation.email }}</span>
+          <span class="text-muted">{{ invitation.get_role_display }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if can_manage %}
+    <h2 class="h5 mt-4">{% trans "Invite a member" %}</h2>
+    <form method="post" action="{% url 'organizations:invite' organization.slug %}">
+      {% csrf_token %}
+      {{ invite_form|crispy }}
+      <button type="submit" class="btn btn-primary">{% trans "Send invitation" %}</button>
+    </form>
+  {% endif %}
+{% endblock %}

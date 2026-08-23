@@ -1,0 +1,35 @@
+[Unit]
+Description=OpenVacant - Gunicorn WSGI server
+After=network.target postgresql.service redis.service
+Wants=redis.service
+
+[Service]
+Type=simple
+User=openvacant
+Group=openvacant
+WorkingDirectory=/opt/openvacant/backend
+EnvironmentFile=/opt/openvacant/backend/.env
+
+ExecStart=/opt/openvacant/venv/bin/gunicorn \
+    --bind 127.0.0.1:8000 \
+    --workers 3 \
+    --graceful-timeout 30 \
+    --timeout 60 \
+    --access-logfile /var/log/openvacant/access.log \
+    --error-logfile /var/log/openvacant/error.log \
+    core.wsgi:application
+
+Restart=on-failure
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/openvacant/backend /var/log/openvacant
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Unsubscribed" %}{% endblock %}
+
+{% block content %}
+  <div class="py-5 text-center">
+    <h1 class="h3">{% trans "You've been unsubscribed" %}</h1>
+    <p class="text-muted">{% trans "You will no longer receive our newsletter. Sorry to see you go." %}</p>
+    <a class="btn btn-outline-primary mt-2" href="{% url 'pages:home' %}">{% trans "Back to home" %}</a>
+  </div>
+{% endblock %}

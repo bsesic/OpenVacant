@@ -1,0 +1,30 @@
+[Unit]
+Description=OpenVacant - Celery worker
+After=network.target redis.service postgresql.service
+Requires=redis.service
+
+[Service]
+Type=simple
+User=openvacant
+Group=openvacant
+WorkingDirectory=/opt/openvacant/backend
+EnvironmentFile=/opt/openvacant/backend/.env
+
+ExecStart=/opt/openvacant/venv/bin/celery -A core worker \
+    --loglevel=info \
+    --logfile=/var/log/openvacant/celery.log
+
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=60
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/openvacant/backend /var/log/openvacant
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Pricing" %}{% endblock %}
+{% block meta_description %}{% trans "Plans and pricing." %}{% endblock %}
+
+{% block content %}
+  <h1 class="h3 mb-4 text-center">{% trans "Pricing" %}</h1>
+
+  {% if not billing_enabled %}
+    <div class="alert alert-warning">{% trans "Billing is not configured yet." %}</div>
+  {% endif %}
+
+  <div class="row g-4 justify-content-center">
+    {% for plan in plans %}
+      <div class="col-md-5 col-lg-4">
+        <div class="card h-100">
+          <div class="card-body d-flex flex-column">
+            <h2 class="h5">{{ plan.name }}</h2>
+            <p class="text-muted flex-grow-1">{{ plan.description }}</p>
+            {% if user.is_authenticated and current_organization %}
+              <form method="post" action="{% url 'billing:checkout' %}">
+                {% csrf_token %}
+                <input type="hidden" name="plan" value="{{ plan.key }}">
+                <button class="btn btn-primary w-100" type="submit"
+                        {% if not billing_enabled or not plan.price_id %}disabled{% endif %}>
+                  {% trans "Subscribe" %}
+                </button>
+              </form>
+            {% else %}
+              <a class="btn btn-outline-primary w-100" href="{% url 'account_signup' %}">
+                {% trans "Get started" %}
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
