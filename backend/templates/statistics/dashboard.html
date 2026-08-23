@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Dashboard" %}{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h1 class="h3 mb-0">{% trans "Dashboard" %}</h1>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'statistics:export' %}">
+      {% trans "Export key figures" %}
+    </a>
+  </div>
+
+  {# Headline numbers. Suspected vacancy is shown separately from confirmed,
+     because reporting them together would overstate the problem. #}
+  <div class="row g-3 mb-4">
+    {% include "statistics/partials/tile.html" with label=_("Records") value=figures.total_records %}
+    {% include "statistics/partials/tile.html" with label=_("Confirmed vacancies") value=figures.confirmed_vacancies tone="primary" %}
+    {% include "statistics/partials/tile.html" with label=_("Suspected") value=figures.suspected_vacancies %}
+    {% include "statistics/partials/tile.html" with label=_("Open checks") value=figures.open_checks tone="warning" %}
+    {% include "statistics/partials/tile.html" with label=_("Critical condition") value=figures.critical_records tone="danger" %}
+    {% include "statistics/partials/tile.html" with label=_("Listed and vacant") value=figures.heritage_vacancies tone="info" %}
+  </div>
+
+  <div class="row g-3 mb-4">
+    {% include "statistics/partials/tile.html" with label=_("Reports awaiting moderation") value=figures.open_reports %}
+    {% include "statistics/partials/tile.html" with label=_("Open tasks") value=figures.open_tasks %}
+    {% include "statistics/partials/tile.html" with label=_("Overdue tasks") value=figures.overdue_tasks tone="danger" %}
+    {% include "statistics/partials/tile.html" with label=_("In a redevelopment area") value=figures.redevelopment_vacancies %}
+    {% include "statistics/partials/tile.html" with label=_("Published") value=figures.published_records %}
+    {% include "statistics/partials/tile.html" with label=_("Reports without a record") value=figures.unlinked_reports %}
+  </div>
+
+  <h2 class="h5 mb-2">{% trans "Map" %}</h2>
+  <div class="row g-2 align-items-end mb-2">
+    <div class="col-md-3">
+      <label class="form-label small" for="dashboard-filter-status">{% trans "Status" %}</label>
+      <select class="form-select form-select-sm" id="dashboard-filter-status">
+        <option value="">{% trans "all" %}</option>
+        {% for entry in breakdowns.by_status %}
+          <option value="{{ entry.key }}">{{ entry.label }} ({{ entry.count }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small" for="dashboard-filter-condition">{% trans "Condition" %}</label>
+      <select class="form-select form-select-sm" id="dashboard-filter-condition">
+        <option value="">{% trans "all" %}</option>
+        {% for entry in breakdowns.by_condition %}
+          <option value="{{ entry.key }}">{{ entry.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  {% url 'statistics:map_data' as dashboard_map_url %}
+  {% include "partials/map_canvas.html" with map_id="dashboard-map" map_url=dashboard_map_url %}
+  <p class="small text-muted mt-1" id="dashboard-map-status" hidden>
+    {% trans "The map data could not be loaded." %}
+  </p>
+
+  <div class="row g-4 mt-4">
+    <div class="col-lg-6">
+      <h2 class="h5 mb-2">{% trans "New and resolved cases" %}</h2>
+      <div id="statistics-series" data-series="{{ series_json }}"></div>
+      <table class="table table-sm mt-2">
+        <thead>
+          <tr>
+            <th>{% trans "Month" %}</th>
+            <th class="text-end">{% trans "New reports" %}</th>
+            <th class="text-end">{% trans "Resolved" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for point in series %}
+            <tr>
+              <td>{{ point.label }}</td>
+              <td class="text-end">{{ point.new }}</td>
+              <td class="text-end">{{ point.resolved }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col-lg-6">
+      <h2 class="h5 mb-2">{% trans "Confirmed vacancy by district" %}</h2>
+      <table class="table table-sm">
+        <tbody>
+          {% for entry in breakdowns.by_district %}
+            <tr>
+              <td>{{ entry.label }}</td>
+              <td class="text-end">{{ entry.count }}</td>
+            </tr>
+          {% empty %}
+            <tr><td class="text-muted">{% trans "No confirmed vacancy recorded." %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <h2 class="h5 mb-2 mt-4">{% trans "Confirmed vacancy by property type" %}</h2>
+      <table class="table table-sm">
+        <tbody>
+          {% for entry in breakdowns.by_property_type %}
+            {% if entry.count %}
+              <tr>
+                <td>{{ entry.label }}</td>
+                <td class="text-end">{{ entry.count }}</td>
+              </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row g-4 mt-2">
+    <div class="col-lg-4">
+      <h2 class="h6 text-uppercase text-muted">{% trans "Latest reports" %}</h2>
+      <ul class="list-group list-group-flush">
+        {% for report in recent_reports %}
+          <li class="list-group-item px-0 small">
+            <a href="{{ report.get_absolute_url }}"><code>{{ report.reference }}</code></a>
+            {{ report.address_line }}
+            <div class="text-muted">{{ report.get_category_display }} · {{ report.created_at|date }}</div>
+          </li>
+        {% empty %}
+          <li class="list-group-item px-0 text-muted small">{% trans "Nothing new." %}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="col-lg-4">
+      <h2 class="h6 text-uppercase text-muted">{% trans "Open tasks" %}</h2>
+      <ul class="list-group list-group-flush">
+        {% for task in open_tasks %}
+          <li class="list-group-item px-0 small">
+            {{ task.label }}
+            {% if task.is_overdue %}<span class="badge text-bg-danger">{% trans "overdue" %}</span>{% endif %}
+            <div class="text-muted">
+              {% if task.due_on %}{{ task.due_on }}{% endif %}
+              {% if task.assignee %}· {{ task.assignee }}{% endif %}
+            </div>
+          </li>
+        {% empty %}
+          <li class="list-group-item px-0 text-muted small">{% trans "Nothing to do." %}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="col-lg-4">
+      <h2 class="h6 text-uppercase text-muted">{% trans "Critical objects" %}</h2>
+      <ul class="list-group list-group-flush">
+        {% for record in critical_records %}
+          <li class="list-group-item px-0 small">
+            <a href="{{ record.get_absolute_url }}"><code>{{ record.reference }}</code></a>
+            {{ record.address_line }}
+            <div class="text-muted">{{ record.get_condition_display }}</div>
+          </li>
+        {% empty %}
+          <li class="list-group-item px-0 text-muted small">{% trans "None recorded." %}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}
