@@ -8,6 +8,7 @@ Production hardening lives in the ``if not DEBUG:`` block at the bottom.
 from pathlib import Path
 
 import environ
+from celery.schedules import crontab
 from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -84,6 +85,7 @@ INSTALLED_APPS = [
     "apps.parcels",
     "apps.properties",
     "apps.reports",
+    "apps.statistics",
     "apps.vacancies",
     "apps.workflows",
 ]
@@ -402,6 +404,13 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULE = {
+    "take-daily-key-figure-snapshots": {
+        "task": "apps.statistics.tasks.take_daily_snapshots",
+        # Just after midnight, so a snapshot is attributed to the day it describes.
+        "schedule": crontab(hour=0, minute=20),
+    },
+}
 
 # --- OpenVacant platform ---------------------------------------------------
 # Map defaults for the citizen portal and the administration dashboard. Each
