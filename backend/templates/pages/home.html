@@ -11,7 +11,10 @@
     <p class="lead text-muted mb-4">
       {% trans "Vacancy and potential register. Report an empty building, and help the town make something of it." %}
     </p>
-    {# The report form and the public map are wired in once the reports app lands. #}
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <a class="btn btn-primary btn-lg" href="{% url 'reports:create' %}">{% trans "Report vacancy" %}</a>
+      <a class="btn btn-outline-secondary btn-lg" href="{% url 'reports:map' %}">{% trans "View the map" %}</a>
+    </div>
   </div>
 
   <div class="row g-4 py-4">
