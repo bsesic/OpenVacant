@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     "apps.municipalities",
     "apps.parcels",
     "apps.properties",
+    "apps.reports",
     "apps.vacancies",
 ]
 

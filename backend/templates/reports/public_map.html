@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Map" %}{% endblock %}
+{% block meta_description %}{% trans "Map of the recorded vacant and neglected buildings." %}{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h1 class="h3 mb-1">{% trans "Recorded objects" %}</h1>
+      <p class="text-muted small mb-0">
+        {% trans "Objects the administration has released for publication." %}
+        <span id="public-map-count"></span>
+      </p>
+    </div>
+    {% if reporting_enabled %}
+      <a class="btn btn-sm btn-primary" href="{% url 'reports:create' %}">
+        {% trans "Report vacancy" %}
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="form-check mb-2">
+    <input class="form-check-input" type="checkbox" id="public-map-filter">
+    <label class="form-check-label small" for="public-map-filter">
+      {% trans "Only confirmed vacancy" %}
+    </label>
+  </div>
+
+  {% url 'reports:map_data' as map_data_url %}
+  {% include "partials/map_canvas.html" with map_id="public-map" map_url=map_data_url %}
+
+  <p class="small text-muted mt-2" id="public-map-status" hidden>
+    {% trans "The map data could not be loaded." %}
+  </p>
+  <p class="small text-muted mt-2">
+    {% trans "Internal notes, contact details and photographs that have not been released are not part of this map." %}
+  </p>
+{% endblock %}

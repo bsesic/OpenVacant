@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Reports" %}{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h1 class="h3 mb-1">{% trans "Reports" %}</h1>
+      <p class="text-muted small mb-0">
+        {% blocktrans count counter=open_count %}
+          {{ counter }} report waiting for moderation.
+        {% plural %}
+          {{ counter }} reports waiting for moderation.
+        {% endblocktrans %}
+      </p>
+    </div>
+  </div>
+
+  <form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-md-4">
+      <label class="form-label small" for="id_q">{% trans "Search" %}</label>
+      <input type="search" class="form-control" id="id_q" name="q"
+             value="{{ filter_form.q.value|default:'' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small" for="{{ filter_form.status.id_for_label }}">
+        {{ filter_form.status.label }}
+      </label>
+      {{ filter_form.status }}
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small" for="{{ filter_form.category.id_for_label }}">
+        {{ filter_form.category.label }}
+      </label>
+      {{ filter_form.category }}
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-outline-secondary w-100" type="submit">{% trans "Filter" %}</button>
+    </div>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>{% trans "Reference" %}</th>
+          <th>{% trans "Category" %}</th>
+          <th>{% trans "Address" %}</th>
+          <th>{% trans "Status" %}</th>
+          <th>{% trans "Record" %}</th>
+          <th>{% trans "Submitted" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for report in reports %}
+          <tr>
+            <td><a href="{{ report.get_absolute_url }}"><code>{{ report.reference }}</code></a></td>
+            <td>{{ report.get_category_display }}</td>
+            <td>{{ report.address_line }}</td>
+            <td><span class="badge text-bg-secondary">{{ report.get_status_display }}</span></td>
+            <td>
+              {% if report.property %}
+                <a href="{{ report.property.get_absolute_url }}">
+                  <code>{{ report.property.reference }}</code>
+                </a>
+              {% else %}—{% endif %}
+            </td>
+            <td class="small text-muted">{{ report.created_at|date:"SHORT_DATE_FORMAT" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-muted">{% trans "No reports match these filters." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% include "partials/pagination.html" %}
+{% endblock %}
