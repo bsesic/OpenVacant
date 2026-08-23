@@ -41,7 +41,8 @@ docs/             architecture, ADRs, runbooks
 Stack: Django 5.1 · Django REST Framework · PostgreSQL + PostGIS · Redis + Celery ·
 S3-compatible object storage · Docker · OpenAPI.
 
-See [`docs/architecture.md`](docs/architecture.md) for the module map and
+See [`docs/architecture.md`](docs/architecture.md) for the module map,
+[`docs/api-guide.md`](docs/api-guide.md) for the API, and
 [`docs/adr/`](docs/adr/README.md) for the decisions behind it.
 
 ## Quickstart (local development)
@@ -70,6 +71,10 @@ npm run dev
 
 http://localhost:8000 · admin `/admin/` · API docs `/api/docs/` · Mailpit http://localhost:8025
 
+`seed_demo` creates a browsable demonstration instance for Reichenbach im
+Vogtland with one account per municipal department. It prints the accounts and
+their shared password, and refuses to run outside development unless forced.
+
 On macOS, GeoDjango needs the Homebrew libraries — set `GEOS_LIBRARY_PATH` and
 `GDAL_LIBRARY_PATH` in `backend/.env`. See [`docs/getting-started.md`](docs/getting-started.md).
 
@@ -92,6 +97,16 @@ cd backend && flake8 . && pytest
 Always deploy the current release from `main`. See
 [`docs/deployment-runbook.md`](docs/deployment-runbook.md) and
 [`deploy/README.md`](deploy/README.md).
+
+## Documentation
+
+- [Getting started](docs/getting-started.md) — local setup
+- [Architecture](docs/architecture.md) — module map and cross-cutting rules
+- [API guide](docs/api-guide.md) — the four areas, keys and scopes
+- [Deployment](deploy/README.md) · [runbook](docs/deployment-runbook.md)
+- [Architecture decisions](docs/adr/README.md)
+- [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md)
+- [Accessibility checklist](docs/accessibility.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ## Data protection
 
