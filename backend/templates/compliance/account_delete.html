@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete account" %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <h1 class="h3 mb-3">{% trans "Delete your account" %}</h1>
+      <div class="alert alert-warning">
+        {% blocktrans %}This deactivates your account immediately and schedules it for
+        permanent deletion. This cannot be undone.{% endblocktrans %}
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">{% trans "Delete my account" %}</button>
+        <a class="btn btn-outline-secondary" href="{% url 'profile' %}">{% trans "Cancel" %}</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

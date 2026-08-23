@@ -1,0 +1,9 @@
+// Customize Bootstrap here, then import it. Override variables before the import.
+// Example: $primary: #4f46e5;
+
+@import "bootstrap/scss/bootstrap";
+
+// Project-specific styles below.
+.footer-link {
+  text-decoration: none;
+}

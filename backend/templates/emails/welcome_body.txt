@@ -1,0 +1,6 @@
+Hi {{ user.get_full_name|default:user.username }},
+
+Your email address has been confirmed and your account is now active.
+
+Thanks for joining,
+The OpenVacant team

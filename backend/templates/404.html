@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Page not found" %}{% endblock %}
+
+{% block content %}
+  <div class="py-5 text-center">
+    <h1 class="display-6">404</h1>
+    <p class="text-muted">{% trans "Sorry, we couldn't find that page." %}</p>
+    <a class="btn btn-primary mt-2" href="{% url 'pages:home' %}">{% trans "Back to home" %}</a>
+  </div>
+{% endblock %}

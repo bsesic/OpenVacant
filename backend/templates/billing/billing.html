@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Billing" %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="h3 mb-3">{% trans "Billing" %} — {{ current_organization.name }}</h1>
+
+      <dl class="row">
+        <dt class="col-sm-4">{% trans "Plan" %}</dt>
+        <dd class="col-sm-8">{{ account.plan|default:_("Free") }}</dd>
+        <dt class="col-sm-4">{% trans "Status" %}</dt>
+        <dd class="col-sm-8">
+          {% if account.is_active %}
+            <span class="badge bg-success">{{ account.status }}</span>
+          {% else %}
+            <span class="badge bg-secondary">{{ account.status|default:_("none") }}</span>
+          {% endif %}
+        </dd>
+        {% if account.current_period_end %}
+          <dt class="col-sm-4">{% trans "Renews / ends" %}</dt>
+          <dd class="col-sm-8">{{ account.current_period_end }}</dd>
+        {% endif %}
+      </dl>
+
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" href="{% url 'billing:pricing' %}">
+          {% trans "View plans" %}
+        </a>
+        {% if account.stripe_customer_id %}
+          <form method="post" action="{% url 'billing:portal' %}" class="m-0">
+            {% csrf_token %}
+            <button class="btn btn-primary" type="submit">
+              {% trans "Manage billing (invoices, payment method, cancel)" %}
+            </button>
+          </form>
+        {% endif %}
+      </div>
+      <p class="text-muted small mt-3">
+        {% trans "Payment methods, invoices and cancellation are handled in the secure Stripe portal." %}
+      </p>
+    </div>
+  </div>
+{% endblock %}

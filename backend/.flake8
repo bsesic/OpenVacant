@@ -1,0 +1,17 @@
+[flake8]
+max-line-length = 100
+extend-ignore =
+    E203,
+    W503
+exclude =
+    .git,
+    .venv,
+    venv,
+    __pycache__,
+    */migrations/*,
+    staticfiles,
+    media,
+    build,
+    dist
+per-file-ignores =
+    core/settings.py:E501

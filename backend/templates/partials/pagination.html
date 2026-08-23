@@ -1,0 +1,28 @@
+{% load i18n %}
+{% comment %}
+Reusable pagination. Requires a `page_obj` (and optionally `is_paginated`) in
+context, as provided by Django's ListView / MultipleObjectMixin.
+{% endcomment %}
+{% if page_obj.paginator.num_pages > 1 %}
+  <nav aria-label="{% trans 'Pagination' %}">
+    <ul class="pagination justify-content-center">
+      <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+        <a class="page-link"
+           href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% else %}#{% endif %}">
+          {% trans "Previous" %}
+        </a>
+      </li>
+      {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+      {% endfor %}
+      <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+        <a class="page-link"
+           href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% else %}#{% endif %}">
+          {% trans "Next" %}
+        </a>
+      </li>
+    </ul>
+  </nav>
+{% endif %}

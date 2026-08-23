@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Subscription confirmed" %}{% endblock %}
+
+{% block content %}
+  <div class="py-5 text-center">
+    <h1 class="h3">{% trans "You're subscribed!" %}</h1>
+    <p class="text-muted">{% trans "Thanks for confirming your newsletter subscription." %}</p>
+    <a class="btn btn-primary mt-2" href="{% url 'pages:home' %}">{% trans "Back to home" %}</a>
+  </div>
+{% endblock %}

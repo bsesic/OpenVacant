@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Accept invitation" %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6 text-center">
+      <h1 class="h3 mb-3">{% trans "Join organization" %}</h1>
+      <p>
+        {% blocktrans with org=invitation.organization.name role=invitation.get_role_display %}
+          You have been invited to join <strong>{{ org }}</strong> as {{ role }}.
+        {% endblocktrans %}
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">{% trans "Accept invitation" %}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

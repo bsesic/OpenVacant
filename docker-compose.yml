@@ -1,0 +1,63 @@
+# Local development stack: PostGIS, Redis, Mailpit, and the Django web service.
+# Production lives in deploy/docker-compose.prod.yml.
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: openvacant
+      POSTGRES_USER: openvacant
+      POSTGRES_PASSWORD: openvacant
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openvacant -d openvacant"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+    environment:
+      MP_MAX_MESSAGES: "500"
+
+  web:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: >-
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      DJANGO_DEBUG: "True"
+      DB_HOST: db
+      DB_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+      EMAIL_HOST: mailpit
+      EMAIL_PORT: "1025"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mailpit:
+        condition: service_started
+
+volumes:
+  postgres_data:

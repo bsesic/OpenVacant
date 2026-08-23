@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Imprint" %}{% endblock %}
+{% block meta_description %}{% trans "Legal information and imprint." %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="h3 mb-3">{% trans "Imprint" %}</h1>
+      <p class="text-muted">{% trans "Add your legally required provider identification here." %}</p>
+    </div>
+  </div>
+{% endblock %}

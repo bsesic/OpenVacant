@@ -1,0 +1,25 @@
+{% load i18n %}
+<footer class="bg-body-tertiary border-top py-4 mt-auto">
+  <div class="container">
+    <div class="row gy-3">
+      <div class="col-md-6">
+        <span class="text-muted small">&copy; {% now "Y" %} OpenVacant</span>
+      </div>
+      <div class="col-md-3">
+        <ul class="list-unstyled small mb-0">
+          <li><a class="footer-link" href="{% url 'pages:imprint' %}">{% trans "Imprint" %}</a></li>
+          <li><a class="footer-link" href="{% url 'pages:privacy' %}">{% trans "Privacy" %}</a></li>
+          <li><a class="footer-link" href="{% url 'pages:terms' %}">{% trans "Terms" %}</a></li>
+          <li><a class="footer-link" href="{% url 'newsletter:subscribe' %}">{% trans "Newsletter" %}</a></li>
+        </ul>
+      </div>
+      <div class="col-md-3">
+        <ul class="list-unstyled small mb-0 footer-social">
+          <li><a class="footer-link" href="#" rel="noopener" target="_blank">X / Twitter</a></li>
+          <li><a class="footer-link" href="#" rel="noopener" target="_blank">LinkedIn</a></li>
+          <li><a class="footer-link" href="#" rel="noopener" target="_blank">GitHub</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
