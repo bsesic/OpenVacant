@@ -14,6 +14,10 @@
       </p>
     </div>
     <div class="d-flex gap-2">
+      {% if can_verify %}
+        <a class="btn btn-sm btn-outline-primary"
+           href="{% url 'inspections:create' property_record.pk %}">{% trans "Record verification" %}</a>
+      {% endif %}
       <a class="btn btn-sm btn-outline-secondary"
          href="{% url 'properties:history' property_record.pk %}">{% trans "History" %}</a>
       {% if can_edit %}
@@ -183,6 +187,41 @@
       </li>
     {% empty %}
       <li class="list-group-item px-0 text-muted small">{% trans "No occupancy history yet." %}</li>
+    {% endfor %}
+  </ul>
+
+  <h2 class="h6 text-uppercase text-muted">{% trans "Verifications" %}</h2>
+  <ul class="list-group list-group-flush mb-4">
+    {% for inspection in inspections %}
+      <li class="list-group-item px-0 small">
+        {{ inspection.inspected_on }} · {{ inspection.get_kind_display }} ·
+        <strong>{{ inspection.get_result_display }}</strong>
+        <span class="text-muted">
+          {% if inspection.inspector %}{{ inspection.inspector }}{% endif %}
+          {% if not inspection.confirms_the_record %}
+            · {% trans "recorded as an observation" %}
+          {% endif %}
+        </span>
+        {% if inspection.findings %}<br>{{ inspection.findings|linebreaksbr }}{% endif %}
+      </li>
+    {% empty %}
+      <li class="list-group-item px-0 text-muted small">{% trans "Not verified yet." %}</li>
+    {% endfor %}
+  </ul>
+
+  <h2 class="h6 text-uppercase text-muted">{% trans "Open tasks" %}</h2>
+  <ul class="list-group list-group-flush mb-4">
+    {% for task in open_tasks %}
+      <li class="list-group-item px-0 small">
+        {{ task.label }}
+        <span class="text-muted">
+          {{ task.get_status_display }}
+          {% if task.due_on %}· {% trans "due" %} {{ task.due_on }}{% endif %}
+          {% if task.assignee %}· {{ task.assignee }}{% endif %}
+        </span>
+      </li>
+    {% empty %}
+      <li class="list-group-item px-0 text-muted small">{% trans "No open tasks." %}</li>
     {% endfor %}
   </ul>
 

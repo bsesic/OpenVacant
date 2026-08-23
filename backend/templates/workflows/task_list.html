@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Tasks" %}{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h1 class="h3 mb-1">{% trans "Tasks" %}</h1>
+      <p class="text-muted small mb-0">
+        {% blocktrans with open=open_count overdue=overdue_count %}
+          {{ open }} open, {{ overdue }} overdue.
+        {% endblocktrans %}
+      </p>
+    </div>
+    {% if can_manage %}
+      <a class="btn btn-sm btn-primary" href="{% url 'workflows:create' %}">{% trans "New task" %}</a>
+    {% endif %}
+  </div>
+
+  <form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-md-3">
+      <label class="form-label small" for="{{ filter_form.status.id_for_label }}">
+        {{ filter_form.status.label }}
+      </label>
+      {{ filter_form.status }}
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small" for="{{ filter_form.task_type.id_for_label }}">
+        {{ filter_form.task_type.label }}
+      </label>
+      {{ filter_form.task_type }}
+    </div>
+    <div class="col-md-3 form-check ms-2">
+      {{ filter_form.mine }}
+      <label class="form-check-label small" for="{{ filter_form.mine.id_for_label }}">
+        {{ filter_form.mine.label }}
+      </label>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-outline-secondary w-100" type="submit">{% trans "Filter" %}</button>
+    </div>
+  </form>
+
+  <ul class="list-group">
+    {% for task in tasks %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-start gap-3">
+          <div>
+            <strong>{{ task.label }}</strong>
+            {% if task.is_overdue %}
+              <span class="badge text-bg-danger">{% trans "overdue" %}</span>
+            {% endif %}
+            <div class="small text-muted">
+              {{ task.get_status_display }} · {{ task.get_priority_display }}
+              {% if task.due_on %}· {% trans "due" %} {{ task.due_on }}{% endif %}
+              {% if task.assignee %}· {{ task.assignee }}{% else %}· {% trans "unassigned" %}{% endif %}
+            </div>
+            {% if task.property %}
+              <div class="small">
+                <a href="{{ task.property.get_absolute_url }}">
+                  <code>{{ task.property.reference }}</code> {{ task.property.address_line }}
+                </a>
+              </div>
+            {% endif %}
+            {% if task.description %}
+              <div class="small mt-1">{{ task.description|linebreaksbr }}</div>
+            {% endif %}
+          </div>
+          <div class="d-flex flex-column gap-1 align-items-end">
+            {% if task.is_open %}
+              <form method="post" action="{% url 'workflows:complete' task.pk %}" class="m-0">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-outline-success">{% trans "Done" %}</button>
+              </form>
+            {% elif can_manage %}
+              <form method="post" action="{% url 'workflows:reopen' task.pk %}" class="m-0">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-outline-secondary">{% trans "Reopen" %}</button>
+              </form>
+            {% endif %}
+            {% if can_manage %}
+              <a class="btn btn-sm btn-link p-0" href="{% url 'workflows:edit' task.pk %}">
+                {% trans "Edit" %}
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </li>
+    {% empty %}
+      <li class="list-group-item text-muted">{% trans "Nothing to do." %}</li>
+    {% endfor %}
+  </ul>
+
+  {% include "partials/pagination.html" %}
+{% endblock %}

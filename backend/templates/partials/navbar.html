@@ -60,6 +60,16 @@
                   </a>
                 </li>
                 <li>
+                  <a class="dropdown-item" href="{% url 'workflows:list' %}">
+                    {% trans "Tasks" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'inspections:list' %}">
+                    {% trans "Verifications" %}
+                  </a>
+                </li>
+                <li>
                   <a class="dropdown-item" href="{% url 'properties:parcels' %}">
                     {% trans "Parcels" %}
                   </a>

@@ -76,11 +76,13 @@ INSTALLED_APPS = [
     "newsletter",
     "api",
     # Domain apps
+    "apps.inspections",
     "apps.municipalities",
     "apps.parcels",
     "apps.properties",
     "apps.reports",
     "apps.vacancies",
+    "apps.workflows",
 ]
 
 MIDDLEWARE = [

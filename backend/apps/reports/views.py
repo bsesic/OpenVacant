@@ -21,6 +21,7 @@ from apps.reports.services import (
     create_property_from_report,
     start_verification,
 )
+from apps.workflows.models import TaskType, ensure_task
 from organizations.mixins import (
     CurrentOrganizationRequiredMixin,
     InternalAreaRequiredMixin,
@@ -285,6 +286,14 @@ class ReportAcceptView(_ReportActionView):
             return redirect(report.get_absolute_url())
         record = create_property_from_report(report, actor=request.user)
         start_verification(record, actor=request.user, reason=_("Created from a citizen report"))
+        ensure_task(
+            request.organization,
+            TaskType.CHECK_PROPERTY,
+            property=record,
+            report=report,
+            description=_("Verify the object reported by a citizen on site."),
+            created_by=request.user,
+        )
         messages.success(
             request,
             _("Record %(reference)s created and put into the preliminary check.")
