@@ -38,6 +38,13 @@ export function initPicker() {
     place(L.latLng(parseFloat(latitudeField.value), parseFloat(longitudeField.value)));
   }
 
+  // An address chosen in the search field moves the marker with it.
+  document.addEventListener("openvacant:location", (event) => {
+    const latlng = L.latLng(event.detail.latitude, event.detail.longitude);
+    map.setView(latlng, 18);
+    place(latlng);
+  });
+
   const locateButton = document.getElementById("report-map-locate");
   if (locateButton && navigator.geolocation) {
     locateButton.addEventListener("click", () => {

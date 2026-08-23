@@ -18,6 +18,10 @@
         <a class="btn btn-sm btn-outline-primary"
            href="{% url 'inspections:create' property_record.pk %}">{% trans "Record verification" %}</a>
       {% endif %}
+      {% if can_edit %}
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'heritage:check_create' property_record.pk %}">{% trans "Heritage check" %}</a>
+      {% endif %}
       <a class="btn btn-sm btn-outline-secondary"
          href="{% url 'properties:history' property_record.pk %}">{% trans "History" %}</a>
       {% if can_edit %}

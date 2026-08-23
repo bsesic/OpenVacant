@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Monuments" %}{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h1 class="h3 mb-1">{% trans "Monuments" %}</h1>
+      <p class="text-muted small mb-0">
+        {% blocktrans count counter=vacant_monuments %}
+          {{ counter }} listed object currently recorded as vacant.
+        {% plural %}
+          {{ counter }} listed objects currently recorded as vacant.
+        {% endblocktrans %}
+      </p>
+    </div>
+    {% if can_edit %}
+      <a class="btn btn-sm btn-primary" href="{% url 'heritage:monument_create' %}">
+        {% trans "Add monument" %}
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>{% trans "Designation" %}</th>
+          <th>{% trans "Number" %}</th>
+          <th>{% trans "Scope" %}</th>
+          <th>{% trans "Authority" %}</th>
+          <th>{% trans "Record" %}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for monument in monuments %}
+          <tr>
+            <td>{{ monument.designation }}</td>
+            <td><code>{{ monument.monument_id|default:"—" }}</code></td>
+            <td>{{ monument.get_scope_display }}</td>
+            <td>{{ monument.authority|default:"—" }}</td>
+            <td>
+              {% if monument.property %}
+                <a href="{{ monument.property.get_absolute_url }}">
+                  <code>{{ monument.property.reference }}</code>
+                </a>
+              {% else %}—{% endif %}
+            </td>
+            <td class="text-end">
+              {% if can_edit %}
+                <a class="btn btn-sm btn-link p-0"
+                   href="{% url 'heritage:monument_edit' monument.pk %}">{% trans "Edit" %}</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-muted">{% trans "No monuments recorded." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% include "partials/pagination.html" %}
+{% endblock %}

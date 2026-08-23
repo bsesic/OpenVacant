@@ -74,6 +74,16 @@
                     {% trans "Parcels" %}
                   </a>
                 </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'heritage:monuments' %}">
+                    {% trans "Monuments" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'geodata:layers' %}">
+                    {% trans "Geodata layers" %}
+                  </a>
+                </li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
                   <a class="dropdown-item" href="{% url 'municipalities:districts' %}">

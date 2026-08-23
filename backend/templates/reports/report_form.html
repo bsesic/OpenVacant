@@ -34,6 +34,15 @@
             {% trans "Click the map to place a marker, or enter the address below. Either is enough." %}
           </p>
 
+          <div class="mb-2 position-relative">
+            <label class="form-label small" for="address-search">{% trans "Search for an address" %}</label>
+            <input type="search" class="form-control" id="address-search"
+                   autocomplete="off"
+                   data-url="{% url 'geodata:address_search' %}"
+                   placeholder="{% trans 'e.g. Bahnhofstraße 12' %}">
+            <div class="list-group mt-1" id="address-search-results"></div>
+          </div>
+
           {% include "partials/map_canvas.html" with map_id="report-map" %}
 
           <div class="d-flex align-items-center gap-3 mt-2 mb-3">

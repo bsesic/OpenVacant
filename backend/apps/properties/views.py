@@ -86,6 +86,10 @@ class PropertyDetailView(
         context["can_verify"] = organization.can_verify(self.request.user)
         context["inspections"] = record.inspections.select_related("inspector")
         context["open_tasks"] = record.tasks.open().select_related("assignee")
+        context["spatial_contexts"] = record.spatial_contexts.select_related(
+            "feature", "feature__layer"
+        )
+        context["heritage_checks"] = record.heritage_checks.all()
         if context["can_edit"]:
             context["transition_form"] = StatusTransitionForm(instance=record)
             context["vacancy_form"] = VacancyStatusForm(instance=record)
