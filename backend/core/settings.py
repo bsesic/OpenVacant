@@ -446,6 +446,12 @@ CELERY_BEAT_SCHEDULE = {
         # Just after midnight, so a snapshot is attributed to the day it describes.
         "schedule": crontab(hour=0, minute=20),
     },
+    "apply-retention-rules": {
+        "task": "compliance.tasks.apply_retention",
+        # A deletion concept that depends on somebody remembering to run it is
+        # not a concept.
+        "schedule": crontab(hour=3, minute=0),
+    },
 }
 
 # --- OpenVacant platform ---------------------------------------------------

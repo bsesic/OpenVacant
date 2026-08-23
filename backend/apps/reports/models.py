@@ -258,7 +258,35 @@ class Report(OrganizationOwnedModel):
                         Report.objects.filter(organization_id=self.organization_id).count() + 1
                     )
             self.reference = f"{pattern}{counter:04d}"
-        return super().save(*args, **kwargs)
+        creating = self._state.adding
+        result = super().save(*args, **kwargs)
+        if creating and self.consent_given_at:
+            self._record_consents()
+        return result
+
+    def _record_consents(self):
+        """Turn the consent ticked on the form into evidence.
+
+        Stored separately from the report so that withdrawing consent, and
+        showing which notice was in force, do not depend on the report surviving.
+        """
+        from compliance.models import ConsentPurpose, ConsentRecord
+
+        ConsentRecord.objects.create(
+            user=self.submitted_by,
+            subject_label=self.reference,
+            purpose=ConsentPurpose.REPORT_SUBMISSION,
+            granted_at=self.consent_given_at,
+            source="report form",
+        )
+        if self.wants_feedback and self.has_contact_details:
+            ConsentRecord.objects.create(
+                user=self.submitted_by,
+                subject_label=self.reference,
+                purpose=ConsentPurpose.FEEDBACK_CONTACT,
+                granted_at=self.consent_given_at,
+                source="report form",
+            )
 
     # --- Moderation actions ------------------------------------------------
     def moderate(self, status, actor=None, note=""):
