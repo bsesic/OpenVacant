@@ -90,6 +90,7 @@ class PropertyDetailView(
             "feature", "feature__layer"
         )
         context["heritage_checks"] = record.heritage_checks.all()
+        context["documents"] = record.documents.select_related("uploaded_by")
         if context["can_edit"]:
             context["transition_form"] = StatusTransitionForm(instance=record)
             context["vacancy_form"] = VacancyStatusForm(instance=record)

@@ -11,6 +11,7 @@ from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, TemplateView
 from django_ratelimit.decorators import ratelimit
 
+from apps.documents.models import DocumentKind
 from apps.municipalities.models import Module
 from apps.properties.choices import VACANCY_STATUSES
 from apps.properties.models import Property
@@ -162,6 +163,7 @@ class PublicMapDataView(View):
             .public()
             .exclude(location__isnull=True)
             .select_related("district")
+            .prefetch_related("documents")
         )
         features = [
             {
@@ -179,6 +181,7 @@ class PublicMapDataView(View):
                     "vacancy_status": record.get_vacancy_status_display(),
                     "is_vacant": record.vacancy_status in VACANCY_STATUSES,
                     "description": record.public_description,
+                    "photo": self._public_photo_url(record),
                 },
             }
             for record in records
@@ -186,6 +189,14 @@ class PublicMapDataView(View):
         return JsonResponse(
             {"type": "FeatureCollection", "features": features}, encoder=DjangoJSONEncoder
         )
+
+    @staticmethod
+    def _public_photo_url(record):
+        """The first released photograph of a released record, if there is one."""
+        for document in record.documents.all():
+            if document.is_public and document.kind == DocumentKind.PHOTO:
+                return document.file.url
+        return None
 
 
 # --- Administration surface ------------------------------------------------

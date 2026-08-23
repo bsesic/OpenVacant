@@ -39,6 +39,7 @@ urlpatterns = [
     path("tasks/", include("apps.workflows.urls")),
     path("geodata/", include("apps.geodata.urls")),
     path("heritage/", include("apps.heritage.urls")),
+    path("documents/", include("apps.documents.urls")),
     path("billing/", include("billing.urls")),
     path("notifications/", include("notifications.urls")),
     path("newsletter/", include("newsletter.urls")),

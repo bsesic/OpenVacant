@@ -111,6 +111,50 @@
     </div>
 
     <div class="col-lg-5">
+      <h2 class="h6 text-uppercase text-muted d-flex justify-content-between align-items-center">
+        <span>{% trans "Documents" %}</span>
+        {% if can_edit %}
+          <a class="btn btn-sm btn-link p-0"
+             href="{% url 'documents:create' property_record.pk %}">{% trans "Upload" %}</a>
+        {% endif %}
+      </h2>
+      <ul class="list-group list-group-flush mb-4">
+        {% for document in documents %}
+          <li class="list-group-item px-0 d-flex justify-content-between align-items-start gap-2">
+            <span class="small">
+              <a href="{{ document.file.url }}" rel="noopener">{{ document.title }}</a>
+              <br><span class="text-muted">{{ document.get_kind_display }}</span>
+              {% if document.is_public %}
+                <span class="badge text-bg-success">{% trans "public" %}</span>
+              {% else %}
+                <span class="badge text-bg-dark">{% trans "internal" %}</span>
+              {% endif %}
+            </span>
+            {% if can_edit %}
+              <span class="d-flex gap-1">
+                {% if document.can_be_published %}
+                  <form method="post" action="{% url 'documents:visibility' document.pk %}"
+                        class="m-0">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-link p-0">
+                      {% if document.visibility == "public" %}
+                        {% trans "Withdraw" %}
+                      {% else %}
+                        {% trans "Release" %}
+                      {% endif %}
+                    </button>
+                  </form>
+                {% endif %}
+                <a class="btn btn-sm btn-link p-0 text-danger"
+                   href="{% url 'documents:delete' document.pk %}">{% trans "Delete" %}</a>
+              </span>
+            {% endif %}
+          </li>
+        {% empty %}
+          <li class="list-group-item px-0 text-muted small">{% trans "No documents." %}</li>
+        {% endfor %}
+      </ul>
+
       <h2 class="h6 text-uppercase text-muted">{% trans "Damages" %}</h2>
       <ul class="list-group list-group-flush mb-3">
         {% for damage in damages %}
