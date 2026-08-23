@@ -83,6 +83,9 @@ class PropertyDetailView(
         context["vacancy_periods"] = record.vacancy_periods.all()
         context["vacancy_days"] = vacancy_duration_days(record)
         context["can_edit"] = organization.is_staff_member(self.request.user)
+        context["can_verify"] = organization.can_verify(self.request.user)
+        context["inspections"] = record.inspections.select_related("inspector")
+        context["open_tasks"] = record.tasks.open().select_related("assignee")
         if context["can_edit"]:
             context["transition_form"] = StatusTransitionForm(instance=record)
             context["vacancy_form"] = VacancyStatusForm(instance=record)

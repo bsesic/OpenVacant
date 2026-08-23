@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{% trans "Record verification" %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="h3 mb-1">{% trans "Record verification" %}</h1>
+      <p class="text-muted small">
+        <code>{{ property_record.reference }}</code> · {{ property_record.address_line }}
+      </p>
+
+      {% if not may_confirm %}
+        <div class="alert alert-info small" role="alert">
+          {% blocktrans %}
+            Thank you for helping. Your observation is recorded and passed to the
+            administration. Confirming a vacancy is an official decision, so the
+            administration makes the final call.
+          {% endblocktrans %}
+        </div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.kind|as_crispy_field }}
+        {{ form.result|as_crispy_field }}
+        {{ form.inspected_on|as_crispy_field }}
+        {{ form.observed_vacancy_status|as_crispy_field }}
+        {{ form.observed_condition|as_crispy_field }}
+        {{ form.observed_damage_types|as_crispy_field }}
+        {{ form.findings|as_crispy_field }}
+        {{ form.photos|as_crispy_field }}
+        <button type="submit" class="btn btn-primary">{% trans "Record verification" %}</button>
+        <a class="btn btn-outline-secondary" href="{{ property_record.get_absolute_url }}">
+          {% trans "Cancel" %}
+        </a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

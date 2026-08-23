@@ -35,6 +35,8 @@ urlpatterns = [
     path("municipality/", include("apps.municipalities.urls")),
     path("properties/", include("apps.properties.urls")),
     path("reports/", include("apps.reports.urls")),
+    path("verifications/", include("apps.inspections.urls")),
+    path("tasks/", include("apps.workflows.urls")),
     path("billing/", include("billing.urls")),
     path("notifications/", include("notifications.urls")),
     path("newsletter/", include("newsletter.urls")),

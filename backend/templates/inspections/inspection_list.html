@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Verifications" %}{% endblock %}
+
+{% block content %}
+  <h1 class="h3 mb-3">{% trans "Verifications" %}</h1>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>{% trans "Date" %}</th>
+          <th>{% trans "Record" %}</th>
+          <th>{% trans "Kind" %}</th>
+          <th>{% trans "Result" %}</th>
+          <th>{% trans "Inspector" %}</th>
+          <th>{% trans "Weight" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inspection in inspections %}
+          <tr>
+            <td>{{ inspection.inspected_on }}</td>
+            <td>
+              <a href="{{ inspection.property.get_absolute_url }}">
+                <code>{{ inspection.property.reference }}</code>
+              </a>
+            </td>
+            <td>{{ inspection.get_kind_display }}</td>
+            <td><span class="badge text-bg-secondary">{{ inspection.get_result_display }}</span></td>
+            <td>{{ inspection.inspector|default:"—" }}</td>
+            <td class="small text-muted">
+              {% if inspection.confirms_the_record %}
+                {% trans "official" %}
+              {% else %}
+                {% trans "observation" %}
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-muted">{% trans "No verifications recorded." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% include "partials/pagination.html" %}
+{% endblock %}
