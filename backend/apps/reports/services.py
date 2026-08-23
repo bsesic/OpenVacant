@@ -10,6 +10,7 @@ from apps.properties.choices import (
     RecordStatus,
     VacancyStatus,
 )
+from apps.participation.services import record_report_accepted
 from apps.properties.models import Property
 from apps.reports.models import ReportCategory, ReportStatus
 
@@ -90,6 +91,7 @@ def attach_report_to_property(report, record, actor=None):
             "updated_at",
         ]
     )
+    record_report_accepted(report, actor=actor)
 
     origin = _describe_origin(report)
     if origin not in (record.sources or ""):
