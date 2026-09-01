@@ -1,0 +1,151 @@
+{% load i18n %}
+<nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'pages:home' %}">
+      {% if municipality.logo %}
+        <img src="{{ municipality.logo.url }}" alt="" height="28">
+      {% endif %}
+      <span>{{ municipality_name|default:"OpenVacant" }}</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#mainNav" aria-controls="mainNav"
+            aria-expanded="false" aria-label="{% trans 'Toggle navigation' %}">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="{% url 'reports:map' %}">{% trans "Map" %}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'reports:create' %}">{% trans "Report vacancy" %}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'pages:about' %}">{% trans "About" %}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'pages:faq' %}">{% trans "FAQ" %}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'billing:pricing' %}">{% trans "Pricing" %}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'pages:contact' %}">{% trans "Contact" %}</a></li>
+      </ul>
+
+      <div class="d-flex align-items-center gap-2">
+        {% include "partials/language_switcher.html" %}
+
+        {% if user.is_authenticated %}
+          {% if current_organization %}
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                      data-bs-toggle="dropdown" aria-expanded="false">
+                {{ current_organization.name }}
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                {% for org in user_organizations %}
+                  <li>
+                    <form method="post" action="{% url 'organizations:switch' org.pk %}">
+                      {% csrf_token %}
+                      <button class="dropdown-item {% if org.pk == current_organization.pk %}active{% endif %}"
+                              type="submit">{{ org.name }}</button>
+                    </form>
+                  </li>
+                {% endfor %}
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'billing:billing' %}">
+                    {% trans "Billing" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'statistics:dashboard' %}">
+                    {% trans "Dashboard" %}
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'reports:list' %}">
+                    {% trans "Reports" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'properties:list' %}">
+                    {% trans "Property records" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'workflows:list' %}">
+                    {% trans "Tasks" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'inspections:list' %}">
+                    {% trans "Verifications" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'properties:parcels' %}">
+                    {% trans "Parcels" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'heritage:monuments' %}">
+                    {% trans "Monuments" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'documents:list' %}">
+                    {% trans "Documents" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'geodata:layers' %}">
+                    {% trans "Geodata layers" %}
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'municipalities:districts' %}">
+                    {% trans "Districts" %}
+                  </a>
+                </li>
+                {% if municipality %}
+                  <li>
+                    <a class="dropdown-item" href="{% url 'municipalities:detail' municipality.pk %}">
+                      {% trans "Municipality" %}
+                    </a>
+                  </li>
+                {% endif %}
+                <li>
+                  <a class="dropdown-item" href="{% url 'integrations:clients' %}">
+                    {% trans "API clients" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'compliance:access_log' %}">
+                    {% trans "Access log" %}
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'organizations:list' %}">
+                    {% trans "Manage tenants" %}
+                  </a>
+                </li>
+              </ul>
+            </div>
+          {% endif %}
+          <a class="btn btn-sm btn-outline-secondary position-relative" href="{% url 'notifications:list' %}"
+             aria-label="{% trans 'Notifications' %}">
+            🔔
+            {% if unread_notifications_count %}
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ unread_notifications_count }}
+              </span>
+            {% endif %}
+          </a>
+          <a class="btn btn-sm btn-outline-secondary" href="{% url 'reports:mine' %}">{% trans "My reports" %}</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{% url 'profile' %}">{% trans "Profile" %}</a>
+          <form method="post" action="{% url 'account_logout' %}" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger">{% trans "Sign out" %}</button>
+          </form>
+        {% else %}
+          <a class="btn btn-sm btn-outline-secondary" href="{% url 'account_login' %}">{% trans "Sign in" %}</a>
+          <a class="btn btn-sm btn-primary" href="{% url 'account_signup' %}">{% trans "Sign up" %}</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>

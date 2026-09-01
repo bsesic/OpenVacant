@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Geodata layers" %}{% endblock %}
+
+{% block content %}
+  <h1 class="h3 mb-1">{% trans "Geodata layers" %}</h1>
+  <p class="text-muted small">
+    {% trans "Imported layers give every object its context. Import them with the import_geojson command; a repeated import under the same key replaces the layer." %}
+  </p>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>{% trans "Layer" %}</th>
+          <th>{% trans "Category" %}</th>
+          <th>{% trans "Features" %}</th>
+          <th>{% trans "Sets" %}</th>
+          <th>{% trans "Active" %}</th>
+          <th>{% trans "Public" %}</th>
+          <th>{% trans "Imported" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for layer in layers %}
+          <tr>
+            <td>
+              {{ layer.name }}
+              {% if layer.source %}<div class="small text-muted">{{ layer.source }}</div>{% endif %}
+            </td>
+            <td>{{ layer.get_category_display }}</td>
+            <td>{{ layer.feature_count }}</td>
+            <td><code class="small">{{ layer.flag|default:"—" }}</code></td>
+            <td>{{ layer.is_active|yesno }}</td>
+            <td>{{ layer.is_public|yesno }}</td>
+            <td class="small text-muted">{{ layer.imported_at|date:"SHORT_DATE_FORMAT"|default:"—" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-muted">{% trans "No layers imported yet." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

@@ -1,0 +1,10 @@
+[Unit]
+Description=OpenVacant daily backup
+
+[Timer]
+OnCalendar=*-*-* 02:15:00
+Persistent=true
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

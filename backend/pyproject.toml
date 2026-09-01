@@ -1,0 +1,22 @@
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+extend-exclude = '''
+/(
+    migrations
+  | staticfiles
+  | media
+  | venv
+)/
+'''
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "core.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = "-ra --strict-markers"
+filterwarnings = [
+    # FORMS_URLFIELD_ASSUME_HTTPS opts into the Django 6 default early and warns
+    # that it is transitional. That is the acknowledgement, not a problem; the
+    # setting and this filter both go away with the Django 6 upgrade.
+    "ignore:The FORMS_URLFIELD_ASSUME_HTTPS transitional setting is deprecated",
+]

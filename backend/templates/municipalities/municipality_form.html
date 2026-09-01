@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{% trans "Municipality settings" %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="h3 mb-1">{% trans "Municipality settings" %}</h1>
+      <p class="text-muted small mb-4">
+        {% trans "Name, contact details, branding and legal texts. Changes apply to the citizen portal immediately." %}
+      </p>
+      {% crispy form %}
+    </div>
+  </div>
+{% endblock %}

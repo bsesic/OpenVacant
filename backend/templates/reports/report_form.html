@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{% trans "Report vacancy" %}{% endblock %}
+{% block meta_description %}{% trans "Report an empty or neglected building in your town." %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="h3 mb-2">{% trans "Report vacancy" %}</h1>
+
+      {% if municipality_missing %}
+        <div class="alert alert-warning" role="alert">
+          {% trans "This installation is not assigned to a municipality yet, so reports cannot be accepted." %}
+        </div>
+      {% else %}
+        <p class="text-muted small mb-4">
+          {% blocktrans %}
+            Tell us about a building that looks empty or neglected. Only the location and
+            your consent are required — everything else helps but is optional. Your report
+            is checked by the administration before anything happens with it.
+          {% endblocktrans %}
+        </p>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <h2 class="h6 text-uppercase text-muted">{% trans "Where is it?" %}</h2>
+          <p class="small text-muted mb-2">
+            {% trans "Click the map to place a marker, or enter the address below. Either is enough." %}
+          </p>
+
+          <div class="mb-2 position-relative">
+            <label class="form-label small" for="address-search">{% trans "Search for an address" %}</label>
+            <input type="search" class="form-control" id="address-search"
+                   autocomplete="off"
+                   data-url="{% url 'geodata:address_search' %}"
+                   placeholder="{% trans 'e.g. Bahnhofstraße 12' %}">
+            <div class="list-group mt-1" id="address-search-results"></div>
+          </div>
+
+          {% include "partials/map_canvas.html" with map_id="report-map" %}
+
+          <div class="d-flex align-items-center gap-3 mt-2 mb-3">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="report-map-locate">
+              {% trans "Use my location" %}
+            </button>
+            <span class="small text-muted" id="report-map-readout"></span>
+          </div>
+          {{ form.latitude }}{{ form.longitude }}
+
+          <div class="row g-2">
+            <div class="col-md-8">{{ form.street|as_crispy_field }}</div>
+            <div class="col-md-4">{{ form.house_number|as_crispy_field }}</div>
+            <div class="col-md-4">{{ form.postal_code|as_crispy_field }}</div>
+            <div class="col-md-8">{{ form.city|as_crispy_field }}</div>
+          </div>
+
+          <h2 class="h6 text-uppercase text-muted mt-4">{% trans "What did you notice?" %}</h2>
+          {{ form.category|as_crispy_field }}
+          {{ form.description|as_crispy_field }}
+          {{ form.damage|as_crispy_field }}
+          {{ form.photos|as_crispy_field }}
+
+          {% if form.contact_email %}
+            <h2 class="h6 text-uppercase text-muted mt-4">{% trans "Contact (optional)" %}</h2>
+            <p class="small text-muted">
+              {% trans "Only needed if you would like to hear back. Contact details are visible to the administration only and are never published." %}
+            </p>
+            <div class="row g-2">
+              <div class="col-md-4">{{ form.contact_name|as_crispy_field }}</div>
+              <div class="col-md-4">{{ form.contact_email|as_crispy_field }}</div>
+              <div class="col-md-4">{{ form.contact_phone|as_crispy_field }}</div>
+            </div>
+          {% endif %}
+          {{ form.wants_feedback|as_crispy_field }}
+
+          {# Honeypot: hidden from people, irresistible to bots. #}
+          <div class="visually-hidden" aria-hidden="true">{{ form.website }}</div>
+
+          <hr class="my-4">
+          {{ form.accepted_privacy_policy|as_crispy_field }}
+          {{ form.accepted_terms|as_crispy_field }}
+          <p class="small text-muted">
+            <a href="{% url 'pages:privacy' %}" target="_blank" rel="noopener">{% trans "Privacy notice" %}</a> ·
+            <a href="{% url 'pages:terms' %}" target="_blank" rel="noopener">{% trans "Terms of use" %}</a>
+          </p>
+
+          <button type="submit" class="btn btn-primary">{% trans "Submit report" %}</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

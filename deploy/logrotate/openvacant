@@ -1,0 +1,23 @@
+# /etc/logrotate.d/openvacant
+#
+# Rotates the app logs written by the systemd units (gunicorn/daphne access +
+# error, celery, celerybeat) to /var/log/openvacant/. copytruncate is used so the
+# long-running processes keep writing to the same file descriptor without a
+# restart/reopen.
+#
+# Install: copy to /etc/logrotate.d/openvacant (root-owned, mode 0644).
+# Adjust the path and the `su` user/group to match your deployment.
+
+/var/log/openvacant/*.log {
+    daily
+    rotate 14
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+    dateext
+    dateformat -%Y-%m-%d
+    su openvacant openvacant
+    create 0640 openvacant openvacant
+}

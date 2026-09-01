@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{% trans "Property records" %}{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h1 class="h3 mb-0">{% trans "Property records" %}</h1>
+    {% if can_edit %}
+      <a class="btn btn-sm btn-primary" href="{% url 'properties:create' %}">
+        {% trans "Add record" %}
+      </a>
+    {% endif %}
+  </div>
+
+  <form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-md-4">
+      <label class="form-label small" for="id_q">{% trans "Search" %}</label>
+      <input type="search" class="form-control" id="id_q" name="q"
+             value="{{ filter_form.q.value|default:'' }}"
+             placeholder="{% trans 'Reference, street, description…' %}">
+    </div>
+    {% for field in filter_form %}
+      {% if field.name != 'q' %}
+        <div class="col-md-2">
+          <label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+        </div>
+      {% endif %}
+    {% endfor %}
+    <div class="col-md-2">
+      <button class="btn btn-outline-secondary w-100" type="submit">{% trans "Filter" %}</button>
+    </div>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>{% trans "Reference" %}</th>
+          <th>{% trans "Address" %}</th>
+          <th>{% trans "District" %}</th>
+          <th>{% trans "Status" %}</th>
+          <th>{% trans "Occupancy" %}</th>
+          <th>{% trans "Condition" %}</th>
+          <th>{% trans "Priority" %}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in properties %}
+          <tr>
+            <td><a href="{{ record.get_absolute_url }}"><code>{{ record.reference }}</code></a></td>
+            <td>{{ record.address_line }}</td>
+            <td>{{ record.district.name|default:"—" }}</td>
+            <td><span class="badge text-bg-secondary">{{ record.get_status_display }}</span></td>
+            <td>{{ record.get_vacancy_status_display }}</td>
+            <td>
+              {{ record.get_condition_display }}
+              {% if record.is_critical %}
+                <span class="badge text-bg-danger">{% trans "critical" %}</span>
+              {% endif %}
+            </td>
+            <td>{{ record.get_priority_display }}</td>
+            <td class="text-end">
+              {% if record.is_public %}
+                <span class="badge text-bg-success">{% trans "published" %}</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" class="text-muted">{% trans "No records match these filters." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% include "partials/pagination.html" %}
+{% endblock %}

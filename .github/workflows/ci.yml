@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main, development]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE*'
+      - 'docs/**'
+  pull_request:
+    branches: [main, development]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE*'
+      - 'docs/**'
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  lint-and-test:
+    name: Lint and test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: openvacant
+          POSTGRES_PASSWORD: openvacant
+          POSTGRES_DB: openvacant
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DJANGO_SECRET_KEY: ci-secret-not-for-prod
+      DJANGO_DEBUG: "True"
+      DATABASE_URL: postgis://openvacant:openvacant@localhost:5432/openvacant
+      REDIS_URL: redis://localhost:6379/0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install geospatial system libraries
+        run: |
+          sudo apt-get update --yes --quiet
+          sudo apt-get install --yes --quiet --no-install-recommends \
+            binutils libproj-dev gdal-bin libgdal-dev
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Django system check
+        run: python manage.py check
+
+      - name: Migration consistency
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: flake8
+        run: flake8 .
+
+      - name: pytest
+        run: pytest

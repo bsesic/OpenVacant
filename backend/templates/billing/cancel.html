@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Checkout cancelled" %}{% endblock %}
+
+{% block content %}
+  <div class="py-5 text-center">
+    <h1 class="h3">{% trans "Checkout cancelled" %}</h1>
+    <p class="text-muted">{% trans "No charge was made. You can pick a plan whenever you're ready." %}</p>
+    <a class="btn btn-outline-primary mt-2" href="{% url 'billing:pricing' %}">{% trans "Back to pricing" %}</a>
+  </div>
+{% endblock %}

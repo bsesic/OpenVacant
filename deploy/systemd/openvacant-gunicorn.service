@@ -1,0 +1,52 @@
+[Unit]
+Description=OpenVacant - Gunicorn WSGI server
+Documentation=https://github.com/bsesic/OpenVacant
+After=network-online.target postgresql.service redis-server.service
+Wants=network-online.target redis-server.service
+
+[Service]
+Type=notify
+User=openvacant
+Group=openvacant
+WorkingDirectory=/opt/openvacant/backend
+EnvironmentFile=/opt/openvacant/backend/.env
+
+# Workers: (2 x cores) + 1 is the usual starting point. gthread rather than sync
+# because a request that waits on the geocoder or on object storage should not
+# occupy a whole worker.
+ExecStart=/opt/openvacant/venv/bin/gunicorn \
+    --bind 127.0.0.1:8000 \
+    --workers 3 \
+    --worker-class gthread \
+    --threads 4 \
+    --max-requests 1000 \
+    --max-requests-jitter 100 \
+    --graceful-timeout 30 \
+    --timeout 60 \
+    --forwarded-allow-ips 127.0.0.1 \
+    --access-logfile /var/log/openvacant/access.log \
+    --error-logfile /var/log/openvacant/error.log \
+    core.wsgi:application
+
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# Hardening. ReadWritePaths covers the media root (uploads) and the log
+# directory; everything else is read-only.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+ReadWritePaths=/opt/openvacant/backend/media /opt/openvacant/backend/staticfiles /var/log/openvacant
+
+[Install]
+WantedBy=multi-user.target

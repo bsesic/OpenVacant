@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Home" %}{% endblock %}
+{% block meta_description %}{% trans "Report vacancy in your town and help turn empty buildings into development potential." %}{% endblock %}
+{% block og_description %}{% trans "Report vacancy in your town and help turn empty buildings into development potential." %}{% endblock %}
+
+{% block content %}
+  <div class="py-5 text-center">
+    <h1 class="display-5">{{ municipality_name|default:"OpenVacant" }}</h1>
+    <p class="lead text-muted mb-4">
+      {% trans "Vacancy and potential register. Report an empty building, and help the town make something of it." %}
+    </p>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <a class="btn btn-primary btn-lg" href="{% url 'reports:create' %}">{% trans "Report vacancy" %}</a>
+      <a class="btn btn-outline-secondary btn-lg" href="{% url 'reports:map' %}">{% trans "View the map" %}</a>
+    </div>
+  </div>
+
+  <div class="row g-4 py-4">
+    <div class="col-md-4">
+      <h2 class="h5">{% trans "Report" %}</h2>
+      <p class="text-muted small mb-0">
+        {% trans "Mark the building on the map, add a photo and a short description. No account needed." %}
+      </p>
+    </div>
+    <div class="col-md-4">
+      <h2 class="h5">{% trans "Verify" %}</h2>
+      <p class="text-muted small mb-0">
+        {% trans "The administration checks every report on site. A report is never counted as confirmed vacancy on its own." %}
+      </p>
+    </div>
+    <div class="col-md-4">
+      <h2 class="h5">{% trans "Develop" %}</h2>
+      <p class="text-muted small mb-0">
+        {% trans "Confirmed objects become a reliable basis for urban development, funding and talks with owners." %}
+      </p>
+    </div>
+  </div>
+{% endblock %}

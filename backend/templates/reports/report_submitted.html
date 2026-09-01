@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Thank you" %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-7 py-4 text-center">
+      <h1 class="h3 mb-3">{% trans "Thank you for your report" %}</h1>
+      <p class="lead text-muted">
+        {% blocktrans with reference=reference %}
+          Your report has the reference <code>{{ reference }}</code>. Please keep it if you
+          would like to ask about the report later.
+        {% endblocktrans %}
+      </p>
+      <p class="text-muted small">
+        {% trans "The administration will check the report. A report on its own is not yet a confirmed vacancy." %}
+      </p>
+      <div class="d-flex gap-2 justify-content-center mt-4 flex-wrap">
+        <a class="btn btn-outline-secondary" href="{% url 'reports:create' %}">
+          {% trans "Report another building" %}
+        </a>
+        {% if user.is_authenticated %}
+          <a class="btn btn-outline-secondary" href="{% url 'reports:mine' %}">
+            {% trans "My reports" %}
+          </a>
+        {% endif %}
+        <a class="btn btn-primary" href="{% url 'pages:home' %}">{% trans "Back to the start" %}</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

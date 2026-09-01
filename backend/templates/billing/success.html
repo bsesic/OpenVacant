@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Subscription active" %}{% endblock %}
+
+{% block content %}
+  <div class="py-5 text-center">
+    <h1 class="h3">{% trans "Thank you!" %}</h1>
+    <p class="text-muted">{% trans "Your subscription is being activated. It may take a moment to appear." %}</p>
+    <a class="btn btn-primary mt-2" href="{% url 'billing:billing' %}">{% trans "Go to billing" %}</a>
+  </div>
+{% endblock %}

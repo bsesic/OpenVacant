@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "API clients" %}{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h1 class="h3 mb-1">{% trans "API clients" %}</h1>
+      <p class="text-muted small mb-0">
+        {% trans "External systems with access to this municipality's data. Access can be withdrawn at any time." %}
+      </p>
+    </div>
+    <a class="btn btn-sm btn-primary" href="{% url 'integrations:client_create' %}">
+      {% trans "Issue client" %}
+    </a>
+  </div>
+
+  {% if new_key %}
+    <div class="alert alert-warning" role="alert">
+      <h2 class="h6">{% trans "New key for" %} {{ new_key.name }}</h2>
+      <p class="small mb-2">
+        {% trans "Copy it now. It is shown once and cannot be recovered — a lost key is replaced, not looked up." %}
+      </p>
+      <code class="user-select-all">{{ new_key.key }}</code>
+    </div>
+  {% endif %}
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>{% trans "Client" %}</th>
+          <th>{% trans "Key" %}</th>
+          <th>{% trans "Scopes" %}</th>
+          <th>{% trans "Status" %}</th>
+          <th>{% trans "Last used" %}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for client in clients %}
+          <tr>
+            <td>
+              {{ client.name }}
+              {% if client.description %}
+                <div class="small text-muted">{{ client.description }}</div>
+              {% endif %}
+            </td>
+            <td><code class="small">{{ client.key_prefix }}…</code></td>
+            <td class="small">
+              {% for label in client.scope_labels %}
+                <span class="badge text-bg-light">{{ label }}</span>
+              {% endfor %}
+              {% if client.grants_internal_data %}
+                <span class="badge text-bg-danger">{% trans "professional data" %}</span>
+              {% endif %}
+            </td>
+            <td class="small">
+              {% if not client.is_active %}
+                <span class="badge text-bg-secondary">{% trans "revoked" %}</span>
+              {% elif client.is_expired %}
+                <span class="badge text-bg-warning">{% trans "expired" %}</span>
+              {% else %}
+                <span class="badge text-bg-success">{% trans "active" %}</span>
+              {% endif %}
+              {% if client.expires_at %}
+                <div class="text-muted">
+                  {% trans "until" %} {{ client.expires_at|date:"SHORT_DATE_FORMAT" }}
+                </div>
+              {% endif %}
+            </td>
+            <td class="small text-muted">
+              {{ client.last_used_at|date:"SHORT_DATETIME_FORMAT"|default:_("never") }}
+              <div>{{ client.request_count }} {% trans "requests" %}</div>
+            </td>
+            <td class="text-end">
+              <div class="d-flex gap-1 justify-content-end flex-wrap">
+                <a class="btn btn-sm btn-link p-0"
+                   href="{% url 'integrations:client_edit' client.pk %}">{% trans "Edit" %}</a>
+                <form method="post" action="{% url 'integrations:client_rotate' client.pk %}"
+                      class="m-0">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-link p-0">{% trans "New key" %}</button>
+                </form>
+                {% if client.is_active %}
+                  <form method="post" action="{% url 'integrations:client_revoke' client.pk %}"
+                        class="m-0">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-link p-0 text-danger">
+                      {% trans "Revoke" %}
+                    </button>
+                  </form>
+                {% else %}
+                  <form method="post"
+                        action="{% url 'integrations:client_reactivate' client.pk %}" class="m-0">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-link p-0">{% trans "Reactivate" %}</button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-muted">{% trans "No external clients." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <p class="small text-muted">
+    {% trans "Clients authenticate with the header" %}
+    <code>Authorization: ApiKey &lt;key&gt;</code>.
+    <a href="{% url 'swagger-ui' %}">{% trans "API documentation" %}</a>
+  </p>
+{% endblock %}

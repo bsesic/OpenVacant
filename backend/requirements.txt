@@ -1,0 +1,46 @@
+# Core runtime dependencies
+Django>=5.1,<5.2
+django-environ>=0.11
+psycopg[binary]>=3.2
+djangorestframework>=3.15
+django-cors-headers>=4.6
+redis>=5.0
+gunicorn>=23.0
+
+# Authentication (Phase 2)
+django-allauth[mfa,socialaccount]>=65,<66
+
+# Forms (Bootstrap 5)
+django-crispy-forms>=2.3
+crispy-bootstrap5>=2024.10
+
+# Frontend assets (Vite pipeline)
+django-vite>=3.0
+
+# Image handling for logos, coats of arms and report photos
+Pillow>=11.0
+
+# Billing (Phase 5)
+stripe>=11.0
+
+# Features (Phase 6)
+django-storages[s3]>=1.14
+django-taggit>=6.0
+django-simple-history>=3.7
+django-waffle>=4.1
+django-import-export>=4.0
+django-activity-stream>=2.0
+
+# Security & compliance (Phase 7)
+django-ratelimit>=4.1
+
+# REST API (Phase 8)
+drf-spectacular>=0.27
+
+# Admin & background jobs (Phase 9)
+django-unfold>=0.40
+celery[redis]>=5.4
+flower>=2.0
+
+# Error tracking (Phase 10)
+sentry-sdk[django]>=2.0

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "My reports" %}{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">{% trans "My reports" %}</h1>
+    <a class="btn btn-sm btn-primary" href="{% url 'reports:create' %}">{% trans "New report" %}</a>
+  </div>
+
+  <ul class="list-group">
+    {% for report in reports %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-start gap-3">
+          <div>
+            <code>{{ report.reference }}</code>
+            <strong class="ms-1">{{ report.get_category_display }}</strong>
+            <div class="small text-muted">{{ report.address_line }}</div>
+            {% if report.description %}
+              <div class="small mt-1">{{ report.description|truncatewords:25 }}</div>
+            {% endif %}
+          </div>
+          <div class="text-end">
+            <span class="badge text-bg-secondary">{{ report.get_status_display }}</span>
+            <div class="small text-muted mt-1">{{ report.created_at|date }}</div>
+          </div>
+        </div>
+      </li>
+    {% empty %}
+      <li class="list-group-item text-muted">
+        {% trans "You have not submitted any reports yet." %}
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% include "partials/pagination.html" %}
+{% endblock %}

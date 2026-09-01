@@ -1,0 +1,30 @@
+{% comment %}
+White label: the municipality's colours and font are emitted as CSS custom
+properties that override the Bootstrap defaults. Anything left blank falls back
+to the theme, so a municipality can set only what it cares about.
+{% endcomment %}
+{% if municipality %}
+  <style>
+    :root {
+      {% if municipality.primary_colour %}
+        --bs-primary: {{ municipality.primary_colour }};
+        --bs-link-color: {{ municipality.primary_colour }};
+        --bs-link-hover-color: {{ municipality.primary_colour }};
+      {% endif %}
+      {% if municipality.accent_colour %}
+        --ov-accent: {{ municipality.accent_colour }};
+      {% endif %}
+      {% if municipality.font_family %}
+        --bs-body-font-family: {{ municipality.font_family }};
+      {% endif %}
+    }
+    {% if municipality.primary_colour %}
+      .btn-primary {
+        --bs-btn-bg: {{ municipality.primary_colour }};
+        --bs-btn-border-color: {{ municipality.primary_colour }};
+        --bs-btn-hover-bg: {{ municipality.primary_colour }};
+        --bs-btn-hover-border-color: {{ municipality.primary_colour }};
+      }
+    {% endif %}
+  </style>
+{% endif %}

@@ -1,0 +1,24 @@
+// Customize Bootstrap here, then import it. Override variables before the import.
+// Example: $primary: #4f46e5;
+
+@import "bootstrap/scss/bootstrap";
+
+// Leaflet and its marker clustering plugin.
+@import "leaflet/dist/leaflet.css";
+@import "leaflet.markercluster/dist/MarkerCluster.css";
+@import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+
+// Project-specific styles below.
+.footer-link {
+  text-decoration: none;
+}
+
+// Maps need an explicit height; Leaflet cannot infer one.
+.map-canvas {
+  height: 420px;
+  border-radius: var(--bs-border-radius);
+}
+
+.map-canvas--compact {
+  height: 260px;
+}

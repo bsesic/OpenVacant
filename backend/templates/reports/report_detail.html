@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block title %}{{ report.reference }}{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+    <div>
+      <h1 class="h3 mb-1">{{ report.get_category_display }}</h1>
+      <p class="text-muted small mb-0">
+        <code>{{ report.reference }}</code> · {{ report.address_line }} ·
+        {{ report.created_at|date:"SHORT_DATETIME_FORMAT" }}
+      </p>
+    </div>
+    <span class="badge text-bg-secondary align-self-center">{{ report.get_status_display }}</span>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <h2 class="h6 text-uppercase text-muted">{% trans "What was reported" %}</h2>
+      <p class="small">{{ report.description|linebreaksbr|default:_("No description given.") }}</p>
+
+      {% if report.damage_labels %}
+        <h2 class="h6 text-uppercase text-muted mt-3">{% trans "Observed damage" %}</h2>
+        <p class="small">
+          {% for label in report.damage_labels %}
+            <span class="badge text-bg-light">{{ label }}</span>
+          {% endfor %}
+        </p>
+        <p class="small text-muted">
+          {% trans "Reported by a member of the public. Not a structural assessment." %}
+        </p>
+      {% endif %}
+
+      <h2 class="h6 text-uppercase text-muted mt-3">{% trans "Location" %}</h2>
+      {% if report.location %}
+        {% include "partials/map_canvas.html" with map_id="report-location-map" map_class="map-canvas map-canvas--compact" marker_latitude=report.location.y marker_longitude=report.location.x %}
+        <p class="small text-muted mt-1">
+          {{ report.location.y|floatformat:5 }}, {{ report.location.x|floatformat:5 }}
+        </p>
+      {% else %}
+        <p class="small text-muted">{% trans "No marker was placed; only an address was given." %}</p>
+      {% endif %}
+
+      <h2 class="h6 text-uppercase text-muted mt-3">
+        {% trans "Photos" %}
+        <span class="badge text-bg-dark">{% trans "internal by default" %}</span>
+      </h2>
+      <div class="row g-2">
+        {% for photo in photos %}
+          <div class="col-6 col-md-4">
+            <img src="{% url 'reports:photo_download' report.pk photo.pk %}"
+                 class="img-fluid rounded" alt="{{ photo.caption }}">
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <span class="small text-muted">
+                {% if photo.is_public %}{% trans "released" %}{% else %}{% trans "internal" %}{% endif %}
+              </span>
+              {% if can_moderate %}
+                <form method="post"
+                      action="{% url 'reports:photo_publication' report.pk photo.pk %}"
+                      class="m-0">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-link p-0">
+                    {% if photo.is_public %}{% trans "Withdraw" %}{% else %}{% trans "Release" %}{% endif %}
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        {% empty %}
+          <div class="col-12"><p class="small text-muted">{% trans "No photos." %}</p></div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <h2 class="h6 text-uppercase text-muted">
+        {% trans "Reporter" %}
+        <span class="badge text-bg-dark">{% trans "internal" %}</span>
+      </h2>
+      <dl class="row small">
+        <dt class="col-5">{% trans "Account" %}</dt>
+        <dd class="col-7">{{ report.submitted_by|default:_("anonymous") }}</dd>
+        {% if report.contact_name or report.contact_email or report.contact_phone %}
+          <dt class="col-5">{% trans "Name" %}</dt>
+          <dd class="col-7">{{ report.contact_name|default:"—" }}</dd>
+          <dt class="col-5">{% trans "Email" %}</dt>
+          <dd class="col-7">{{ report.contact_email|default:"—" }}</dd>
+          <dt class="col-5">{% trans "Phone" %}</dt>
+          <dd class="col-7">{{ report.contact_phone|default:"—" }}</dd>
+        {% endif %}
+        <dt class="col-5">{% trans "Wants feedback" %}</dt>
+        <dd class="col-7">{{ report.wants_feedback|yesno }}</dd>
+        <dt class="col-5">{% trans "Consent given" %}</dt>
+        <dd class="col-7">{{ report.consent_given_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</dd>
+      </dl>
+
+      {% if report.property %}
+        <div class="alert alert-success small">
+          {% trans "Attached to record" %}
+          <a href="{{ report.property.get_absolute_url }}">
+            <code>{{ report.property.reference }}</code>
+          </a>
+        </div>
+      {% elif can_moderate %}
+        <h2 class="h6 text-uppercase text-muted mt-3">{% trans "Turn into a record" %}</h2>
+        <form method="post" action="{% url 'reports:accept' report.pk %}" class="mb-3">
+          {% csrf_token %}
+          <p class="small text-muted">
+            {% trans "Creates a new record from this report and starts the preliminary check. The reporter's own words go into the internal description, never the public one." %}
+          </p>
+          <button class="btn btn-sm btn-primary">{% trans "Create record" %}</button>
+        </form>
+
+        <h2 class="h6 text-uppercase text-muted">{% trans "Or attach to an existing record" %}</h2>
+        <form method="post" action="{% url 'reports:attach' report.pk %}" class="mb-3">
+          {% csrf_token %}
+          <select name="property" class="form-select form-select-sm mb-2" required>
+            <option value="">{% trans "Choose a record…" %}</option>
+            {% for candidate in candidates %}
+              <option value="{{ candidate.pk }}">
+                {{ candidate.reference }} — {{ candidate.address_line }}
+              </option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-sm btn-outline-secondary">{% trans "Attach" %}</button>
+        </form>
+      {% endif %}
+
+      {% if can_moderate %}
+        <h2 class="h6 text-uppercase text-muted mt-3">{% trans "Moderation" %}</h2>
+        <form method="post" action="{% url 'reports:moderate' report.pk %}">
+          {% csrf_token %}
+          {{ moderation_form|crispy }}
+          <button class="btn btn-sm btn-outline-secondary">{% trans "Save decision" %}</button>
+        </form>
+        {% if report.moderation_note %}
+          <p class="small text-muted mt-2">{{ report.moderation_note|linebreaksbr }}</p>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

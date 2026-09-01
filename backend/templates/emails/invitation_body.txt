@@ -1,0 +1,11 @@
+Hi,
+
+You have been invited to join {{ invitation.organization.name }} as
+{{ invitation.get_role_display }}.
+
+Accept the invitation here:
+{{ accept_url }}
+
+If you did not expect this, you can ignore this email.
+
+The OpenVacant team

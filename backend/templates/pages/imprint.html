@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Imprint" %}{% endblock %}
+{% block meta_description %}{% trans "Legal information and imprint." %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="h3 mb-3">{% trans "Imprint" %}</h1>
+      {% if municipality.imprint %}
+        <div>{{ municipality.imprint|linebreaks }}</div>
+      {% else %}
+        {# Each municipality is the provider of its own instance and maintains
+           this text in its settings. #}
+        <p class="text-muted">
+          {% trans "The provider identification has not been filled in for this instance yet." %}
+        </p>
+      {% endif %}
+      {% if municipality.postal_address %}
+        <address class="small text-muted mt-3">{{ municipality.postal_address|linebreaks }}</address>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

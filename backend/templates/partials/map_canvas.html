@@ -1,0 +1,18 @@
+{% comment %}
+Map container. The server supplies the tile source and the starting view through
+data attributes so a municipality can change either without a rebuild.
+
+Expects: map_id, map_defaults, optionally map_class, map_url and a
+marker_latitude/marker_longitude pair for a read-only single-marker map.
+{% endcomment %}
+<div id="{{ map_id }}"
+     class="{{ map_class|default:'map-canvas' }}"
+     data-latitude="{{ map_defaults.latitude }}"
+     data-longitude="{{ map_defaults.longitude }}"
+     data-zoom="{{ map_defaults.zoom }}"
+     data-tile-url="{{ map_defaults.tile_url }}"
+     data-tile-attribution="{{ map_defaults.tile_attribution }}"
+     {% if map_url %}data-url="{{ map_url }}"{% endif %}
+     {% if marker_latitude %}data-static-marker="1"
+       data-marker-latitude="{{ marker_latitude|stringformat:'f' }}"
+       data-marker-longitude="{{ marker_longitude|stringformat:'f' }}"{% endif %}></div>

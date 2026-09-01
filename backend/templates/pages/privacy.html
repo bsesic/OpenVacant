@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Privacy" %}{% endblock %}
+{% block meta_description %}{% trans "Privacy policy." %}{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="h3 mb-3">{% trans "Privacy policy" %}</h1>
+      {% if municipality.privacy_notice %}
+        <div>{{ municipality.privacy_notice|linebreaks }}</div>
+      {% else %}
+        <p class="text-muted">
+          {% trans "The privacy notice has not been filled in for this instance yet." %}
+        </p>
+      {% endif %}
+      <p class="small text-muted mt-4">
+        {% trans "You can download the data held about you or request deletion of your account at any time." %}
+        <a href="{% url 'compliance:data_export' %}">{% trans "Download my data" %}</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}
