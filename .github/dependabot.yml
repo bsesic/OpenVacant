@@ -1,0 +1,72 @@
+# Dependency updates.
+#
+# Everything targets `development`: `main` carries releases and is the
+# deployment target, so a bump has to go through the same path as any other
+# change. Without this, Dependabot uses the repository default branch and raises
+# its pull requests straight against `main`.
+#
+# Minor and patch updates are grouped per ecosystem to keep the pull request
+# count manageable. Major updates stay separate, because they are the ones that
+# need reading.
+
+version: 2
+
+updates:
+  # Python. A Django or allauth security release matters more here than anything
+  # else in this file: the platform holds personal data about members of the
+  # public who did not choose to be in it.
+  - package-ecosystem: pip
+    directory: /backend
+    target-branch: development
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels: [backend, enhancement]
+    commit-message:
+      prefix: "Update"
+    groups:
+      python-minor-and-patch:
+        update-types: [minor, patch]
+
+  # Frontend. Mostly transitive build tooling; the build itself is what CI
+  # checks, so a grouped bump is cheap to verify.
+  - package-ecosystem: npm
+    directory: /frontend
+    target-branch: development
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels: [frontend, enhancement]
+    commit-message:
+      prefix: "Update"
+    groups:
+      frontend-minor-and-patch:
+        update-types: [minor, patch]
+
+  # Workflow actions. Rarely urgent, but a pinned action that stops receiving
+  # updates is how a CI pipeline quietly rots.
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: development
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    labels: [enhancement]
+    commit-message:
+      prefix: "Update"
+    groups:
+      actions:
+        update-types: [minor, patch]
+
+  # Container base images for the backend image and the local stack.
+  - package-ecosystem: docker
+    directory: /backend
+    target-branch: development
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    labels: [deployment, enhancement]
+    commit-message:
+      prefix: "Update"
