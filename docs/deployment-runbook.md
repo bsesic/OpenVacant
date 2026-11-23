@@ -200,6 +200,38 @@ renewals work without touching the configuration.
 - **Database password** — change it in Postgres and in `backend/.env`, then
   restart the web process, the worker and the scheduler.
 
+## Housekeeping: tables from removed apps
+
+Three apps inherited from the platform foundation were never used by the
+register and have been removed: `django-taggit` (the domain uses controlled
+vocabularies, not free tags), `django-activity-stream` (auditability comes from
+typed records — status transitions, inspections, the access log — which carry
+actor and reason in a way a generic feed cannot), and `django-waffle` (feature
+toggling per municipality is `municipalities.ModuleActivation`).
+
+A database created after that change never gets their tables. A database
+migrated **before** it keeps them, holding no data anyone reads. They are
+harmless, so this is optional cleanup rather than a step in an upgrade.
+
+If you want them gone, back up first, then:
+
+```sql
+DROP TABLE IF EXISTS taggit_taggeditem, taggit_tag CASCADE;
+DROP TABLE IF EXISTS actstream_action, actstream_follow CASCADE;
+DROP TABLE IF EXISTS waffle_flag_users, waffle_flag_groups,
+                     waffle_flag, waffle_switch, waffle_sample CASCADE;
+
+DELETE FROM django_migrations WHERE app IN ('taggit', 'actstream', 'waffle');
+```
+
+The `DELETE` matters as much as the `DROP`: leaving the rows behind would make
+Django believe those migrations are applied if one of the apps were ever
+reinstalled, and it would then skip creating the tables it needs.
+
+This is deliberately not an automatic migration. Dropping tables is
+irreversible, the tables cost nothing, and an operator should decide when their
+database loses something rather than discovering it after a deploy.
+
 ## Incidents
 
 **The site is down.** Check `systemctl status openvacant-gunicorn`, then

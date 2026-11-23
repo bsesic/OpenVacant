@@ -52,11 +52,8 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "django_vite",
-    "taggit",
     "simple_history",
-    "waffle",
     "import_export",
-    "actstream",
     # Authentication (allauth)
     "allauth",
     "allauth.account",
@@ -111,9 +108,8 @@ MIDDLEWARE = [
     "organizations.middleware.OrganizationMiddleware",
     # Sets request.municipality (needs the tenant, so it comes after it).
     "apps.municipalities.middleware.MunicipalityMiddleware",
-    # Audit-log request user + feature flags.
+    # Records which user made a change, for the record history.
     "simple_history.middleware.HistoryRequestMiddleware",
-    "waffle.middleware.WaffleMiddleware",
 ]
 
 SITE_ID = env.int("DJANGO_SITE_ID", default=1)
@@ -432,12 +428,6 @@ SPECTACULAR_SETTINGS = {
 
 # allauth headless: JSON auth endpoints for SPA/mobile (session + app tokens).
 HEADLESS_ONLY = False
-
-# --- Activity stream -------------------------------------------------------
-ACTSTREAM_SETTINGS = {
-    "USE_JSONFIELD": True,
-    "FETCH_RELATIONS": True,
-}
 
 # --- Unfold admin theme ----------------------------------------------------
 UNFOLD = {
