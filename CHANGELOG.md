@@ -119,6 +119,13 @@ real geodata and real objects.
   property-attached media with a public/internal split.
 - The state machine library, replaced by the explicit logged transition table,
   and the Elasticsearch backend, replaced by Postgres full-text search.
+- Three further unused apps from the foundation: the tagging library, because
+  the domain uses controlled vocabularies rather than free tags; the activity
+  stream, because auditability comes from typed records that carry actor and
+  reason; and the feature-flag library, because per-municipality toggling is
+  already a domain model and a second parallel toggle system is how a feature
+  ends up on in one place and off in the other. The flag library also ran
+  middleware on every request for nothing.
 
 ### Fixed
 - A Celery integration test hung indefinitely: assigning
